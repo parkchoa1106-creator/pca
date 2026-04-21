@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>챗봇 시나리오 관리 – 기획자용 관리자 화면 v2</title>
+<meta name="viewport" content="width=1400, initial-scale=0.25, minimum-scale=0.2, maximum-scale=3, user-scalable=yes" />
+<style>
+  :root{
+    --bg:#F4F6FA;
+    --panel:#FFFFFF;
+    --line:#E3E8F0;
+    --line-2:#CED6E3;
+    --text:#1E2A3A;
+    --text-2:#4A5567;
+    --muted:#8793A6;
+    --brand:#2E5BFF;
+    --brand-2:#6F8BFF;
+    --brand-soft:#EEF2FF;
+    --ok:#10B981;
+    --ok-soft:#E7F7F1;
+    --warn:#F59E0B;
+    --warn-soft:#FEF4E6;
+    --danger:#EF4444;
+    --danger-soft:#FDECEC;
+    --purple:#7C3AED;
+    --purple-soft:#F1ECFE;
+    --teal:#0891B2;
+    --teal-soft:#E4F5FA;
+    --yellow:#FBBF24;
+    --radius:12px;
+    --radius-lg:16px;
+    --shadow:0 1px 2px rgba(16,24,40,.04), 0 4px 14px rgba(16,24,40,.06);
+    --shadow-lg:0 6px 24px rgba(30,42,58,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;font-size:14px;line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer}
+
+  /* ====== App shell ====== */
+  .app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+  .sidebar{background:#0F172A;color:#E5E9F2;padding:18px 14px;position:sticky;top:0;height:100vh}
+  .logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;margin:4px 6px 22px}
+  .logo .logo-ic{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6F8BFF,#2E5BFF);display:grid;place-items:center;font-size:14px}
+  .nav-section{font-size:11px;color:#8A97B3;letter-spacing:.06em;text-transform:uppercase;margin:18px 10px 8px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:#C7CFE1;font-weight:500;margin-bottom:2px}
+  .nav-item .ic{width:18px;text-align:center}
+  .nav-item.active{background:rgba(110,139,255,.18);color:#fff}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:#fff}
+  .sidebar-bottom{position:absolute;bottom:14px;left:14px;right:14px;padding:10px;background:rgba(255,255,255,.04);border-radius:10px;font-size:12px;color:#B8C1D4;display:flex;align-items:center;gap:10px}
+  .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#F59E0B,#EF4444);display:grid;place-items:center;color:#fff;font-weight:700;font-size:12px}
+
+  .main{display:flex;flex-direction:column}
+  .topbar{position:sticky;top:0;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:14px;z-index:50}
+  .crumbs{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px}
+  .crumbs b{color:var(--text)}
+  .topbar .grow{flex:1}
+  .topbar .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font-size:12px;font-weight:600}
+  .topbar .pill .dot{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+  .topbar .user{display:flex;align-items:center;gap:10px;color:var(--text-2);font-size:13px}
+
+  .body{padding:22px 28px 60px;max-width:1320px;margin:0 auto;width:100%}
+  .intro{background:linear-gradient(120deg,#EEF2FF, #F6EFFE);border:1px solid #E3E8F5;border-radius:var(--radius-lg);padding:18px 22px;display:flex;align-items:center;gap:16px;margin-bottom:22px}
+  .intro .ic{width:44px;height:44px;border-radius:12px;background:#fff;display:grid;place-items:center;font-size:22px;box-shadow:var(--shadow)}
+  .intro h1{margin:0;font-size:18px}
+  .intro p{margin:4px 0 0;color:var(--text-2);font-size:13px}
+  .intro .cta{margin-left:auto;display:flex;gap:8px}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);font-weight:600;font-size:13px}
+  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn.primary:hover{background:#1F46D8}
+  .btn.ghost{background:transparent}
+  .btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+  .btn.soft{background:var(--brand-soft);color:var(--brand);border-color:#DCE3FF}
+
+  /* ====== Screen tabs ====== */
+  .tabs{display:flex;gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px;margin-bottom:18px;box-shadow:var(--shadow)}
+  .tab{flex:1;text-align:center;padding:11px 10px;border-radius:8px;font-weight:600;color:var(--text-2);font-size:13px}
+  .tab.active{background:var(--brand);color:#fff}
+  .tab .step{display:inline-block;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.25);margin-right:6px;font-size:11px;line-height:20px;text-align:center}
+  .tab:not(.active) .step{background:#EEF2FF;color:var(--brand)}
+
+  /* ====== Cards ====== */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow)}
+  .card-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+  .card-head h2{margin:0;font-size:15px;letter-spacing:-.01em}
+  .card-head .sub{color:var(--muted);font-size:12.5px}
+  .card-body{padding:18px 20px}
+
+  .screen{display:none}
+  .screen.active{display:block}
+  .screen-title{display:flex;align-items:center;gap:10px;margin:6px 4px 14px}
+  .screen-title .no{background:var(--brand);color:#fff;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:13px}
+  .screen-title h2{margin:0;font-size:17px}
+  .screen-title .hint{color:var(--muted);font-size:12.5px;margin-left:8px}
+
+  /* ====== Screen 1 : scenario list ====== */
+  .list-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .search{position:relative;flex:1;min-width:280px}
+  .search input{width:100%;padding:10px 12px 10px 36px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13px}
+  .search .ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--text-2);font-size:12.5px}
+  .chip.active{background:var(--brand-soft);color:var(--brand);border-color:#CED9FF}
+
+  table.table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+  table.table th{background:#F7F9FD;text-align:left;font-weight:600;color:var(--text-2);font-size:12px;padding:12px 14px;border-bottom:1px solid var(--line);text-transform:uppercase;letter-spacing:.04em}
+  table.table td{padding:14px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:13px}
+  table.table tr:last-child td{border-bottom:none}
+  table.table tr:hover td{background:#FAFBFE}
+  .tag{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:600}
+  .tag.ok{background:var(--ok-soft);color:var(--ok)}
+  .tag.warn{background:var(--warn-soft);color:var(--warn)}
+  .tag.danger{background:var(--danger-soft);color:var(--danger)}
+  .tag.muted{background:#EEF1F6;color:var(--text-2)}
+  .tag.brand{background:var(--brand-soft);color:var(--brand)}
+  .tag.purple{background:var(--purple-soft);color:var(--purple)}
+
+  .scen-title{display:flex;flex-direction:column}
+  .scen-title b{font-size:13.5px}
+  .scen-title span{color:var(--muted);font-size:12px}
+
+  /* ====== Screen 2 : editor ====== */
+  .editor{display:grid;grid-template-columns:260px 1fr 340px;gap:14px}
+  .palette{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow);height:fit-content}
+  .palette h3{margin:4px 4px 12px;font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em}
+  .block{display:flex;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:#FAFBFE;cursor:grab}
+  .block .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:16px;flex-shrink:0}
+  .block h4{margin:0;font-size:13px}
+  .block p{margin:2px 0 0;font-size:11.5px;color:var(--muted)}
+  .block.q .ic{background:var(--brand-soft);color:var(--brand)}
+  .block.c .ic{background:var(--purple-soft);color:var(--purple)}
+  .block.a .ic{background:var(--teal-soft);color:var(--teal)}
+  .block.m .ic{background:var(--ok-soft);color:var(--ok)}
+  .block.h .ic{background:var(--warn-soft);color:var(--warn)}
+  .block.l .ic{background:var(--danger-soft);color:var(--danger)}
+
+  .canvas{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:18px;min-height:620px;position:relative;overflow:auto}
+  .canvas-hd{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .canvas-hd h3{margin:0;font-size:14px}
+  .canvas-hd .sub{color:var(--muted);font-size:12px}
+  .canvas-hd .zoom{margin-left:auto;display:flex;gap:6px}
+  .canvas-hd .zoom button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 10px;font-weight:600}
+
+  .flow{display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0 20px}
+  .node{width:430px;padding:12px 14px;border:1px solid var(--line-2);border-radius:12px;background:#fff;position:relative;box-shadow:var(--shadow)}
+  .node.selected{border-color:var(--brand);box-shadow:0 0 0 3px #DCE5FF, var(--shadow-lg)}
+  .node-type{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .node-type .chip-ic{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:12px}
+  .node .txt{font-size:13.5px;color:var(--text)}
+  .node .meta{color:var(--muted);font-size:11.5px;margin-top:4px}
+
+  .node.q{border-top:3px solid var(--brand)}
+  .node.q .chip-ic{background:var(--brand-soft);color:var(--brand)}
+  .node.c{border-top:3px solid var(--purple)}
+  .node.c .chip-ic{background:var(--purple-soft);color:var(--purple)}
+  .node.a{border-top:3px solid var(--teal)}
+  .node.a .chip-ic{background:var(--teal-soft);color:var(--teal)}
+  .node.m{border-top:3px solid var(--ok)}
+  .node.m .chip-ic{background:var(--ok-soft);color:var(--ok)}
+  .node.h{border-top:3px solid var(--warn)}
+  .node.h .chip-ic{background:var(--warn-soft);color:var(--warn)}
+
+  /* ====== Customer-visibility indicator ====== */
+  .node.visible{border-left:4px solid #2E5BFF}
+  .node.internal{border-left:4px solid #8793A6;background:repeating-linear-gradient(45deg,#FAFBFE,#FAFBFE 8px,#F1F5FA 8px,#F1F5FA 16px)}
+  .vis-tag{position:absolute;top:-11px;right:12px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.02em;display:inline-flex;align-items:center;gap:4px;box-shadow:0 1px 2px rgba(16,24,40,.12)}
+  .vis-tag.seen{background:#2E5BFF;color:#fff}
+  .vis-tag.hidden-tag{background:#64748B;color:#fff}
+  .preview-bubble{margin-top:10px;padding:9px 12px;background:#F1F5FA;border-radius:12px;border-top-left-radius:4px;font-size:12.5px;color:var(--text);position:relative;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+  .preview-bubble::before{content:"👤";font-size:13px;flex-shrink:0}
+  .preview-bubble .label{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:2px}
+  .preview-bubble.choice{background:#F7F4FF}
+  .preview-bubble.choice::before{content:"📋"}
+  .preview-bubble.bot-choices{display:flex;flex-direction:column;gap:4px;background:transparent;padding:0;margin-top:8px}
+  .preview-bubble.bot-choices::before{content:""}
+  .preview-bubble.bot-choices .mini-btn{padding:6px 10px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:11.5px;color:var(--brand);font-weight:600;text-align:left;width:fit-content}
+  .internal-note{margin-top:10px;padding:8px 12px;background:#EEF1F6;border-radius:10px;border-left:3px solid #64748B;font-size:11.5px;color:var(--text-2);display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+  .internal-note::before{content:"🤖";font-size:13px;flex-shrink:0}
+
+  .leaf{position:relative}
+  .leaf .vis-tag{top:-9px;right:6px;font-size:9.5px;padding:2px 7px}
+
+  .block .vis-dot{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:6px;margin-top:3px}
+  .block .vis-dot.seen{background:#DCE5FF;color:var(--brand)}
+  .block .vis-dot.hidden-tag{background:#E1E6EE;color:#475569}
+
+  .legend.vis{background:linear-gradient(120deg,#EEF4FF,#F1ECFE);border:1px solid #D8E2FB;border-style:solid}
+  .legend.vis .big{font-size:12.5px;font-weight:700;color:var(--text)}
+  .legend.vis .chip-ex{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;color:#fff}
+  .legend.vis .chip-ex.seen{background:#2E5BFF}
+  .legend.vis .chip-ex.hidden-tag{background:#64748B}
+
+  /* ====== Drag & drop UI ====== */
+  .palette .block{user-select:none;transition:transform .1s, box-shadow .1s}
+  .palette .block[draggable="true"]:hover{border-color:var(--brand-2);box-shadow:var(--shadow);transform:translateY(-1px)}
+  .palette .block.dragging{opacity:.4}
+  .palette .tip-drag{font-size:11.5px;color:var(--muted);padding:10px 12px;background:#F7F9FD;border:1px dashed var(--line-2);border-radius:10px;margin-top:8px;display:flex;gap:8px;align-items:flex-start;line-height:1.45}
+  .palette .tip-drag::before{content:"💡";font-size:14px;flex-shrink:0}
+
+  .drop-zone{width:360px;height:40px;border:2px dashed var(--line-2);border-radius:12px;margin:4px auto;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;font-weight:600;transition:all .15s;background:transparent}
+  .drop-zone::before{content:"＋ 여기에 블록을 놓으면 연결돼요";letter-spacing:.02em}
+  .canvas.drag-over .drop-zone{background:#F0F4FF;border-color:var(--brand);color:var(--brand)}
+  .drop-zone.hot{background:#DCE5FF;border-color:var(--brand);border-style:solid;color:var(--brand);transform:scale(1.01)}
+  .drop-zone.hot::before{content:"⬇ 여기에 놓기"}
+
+  /* "+ 분기 추가" handle */
+  .node .add-branch{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+  .branch-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:1px dashed var(--line-2);background:#fff;font-size:11.5px;font-weight:600;color:var(--brand);cursor:pointer}
+  .branch-btn:hover{background:var(--brand-soft);border-style:solid;border-color:var(--brand)}
+  .branch-btn.true{color:var(--ok);border-color:#BFE9D9}
+  .branch-btn.false{color:var(--danger);border-color:#F4B6B6}
+  .branch-btn.custom{color:var(--purple);border-color:#D8C6FA}
+
+  /* Editable branch labels on arrows */
+  .arrow .label{background:#fff;border:1px solid var(--line);padding:3px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;font-weight:600;color:var(--text-2);box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .arrow .label:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
+  .arrow .label.true{color:var(--ok);border-color:#BFE9D9;background:var(--ok-soft)}
+  .arrow .label.false{color:var(--danger);border-color:#F4B6B6;background:var(--danger-soft)}
+  .arrow .label .ic{font-size:9px;margin-left:3px;opacity:.7}
+  .arrow{height:28px}
+
+  /* Branch-type popover */
+  .pop{position:relative;display:inline-block}
+  .pop .popover{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-lg);padding:12px;width:280px;z-index:20}
+  .pop .popover::before{content:"";position:absolute;top:-6px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:#fff;border-left:1px solid var(--line);border-top:1px solid var(--line)}
+  .pop .popover h5{margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+  .pop-opt{display:flex;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;align-items:center}
+  .pop-opt:hover{background:var(--brand-soft)}
+  .pop-opt .ic{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;font-size:13px;flex-shrink:0}
+  .pop-opt .ic.t{background:var(--ok-soft);color:var(--ok)}
+  .pop-opt .ic.f{background:var(--danger-soft);color:var(--danger)}
+  .pop-opt .ic.c{background:var(--purple-soft);color:var(--purple)}
+  .pop-opt .ic.s{background:var(--brand-soft);color:var(--brand)}
+  .pop-opt h6{margin:0;font-size:12.5px;font-weight:700;color:var(--text)}
+  .pop-opt p{margin:1px 0 0;color:var(--muted);font-size:11px}
+  .pop-foot{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);display:flex;gap:6px}
+  .pop-foot input{flex:1;border:1px solid var(--line);padding:6px 9px;border-radius:7px;font-size:12px}
+
+  /* Connection handle dots */
+  .node .handle-bottom{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--brand);color:var(--brand);display:grid;place-items:center;font-size:11px;font-weight:700;cursor:crosshair;opacity:0;transition:opacity .15s}
+  .node:hover .handle-bottom{opacity:1}
+  .node .handle-bottom:hover{background:var(--brand);color:#fff}
+
+  /* System picker card in properties panel */
+  .sys-picked{border:1.5px solid var(--brand);border-radius:12px;background:linear-gradient(180deg,#F7F9FF,#EEF2FF);padding:12px;margin-bottom:6px}
+  .sys-picked-head{display:flex;gap:10px;align-items:flex-start}
+  .sys-picked .sys-ic{width:38px;height:38px;border-radius:10px;background:#fff;display:grid;place-items:center;font-size:18px;flex-shrink:0;box-shadow:var(--shadow)}
+  .sys-picked .sys-info h5{margin:0 0 2px;font-size:13.5px;color:var(--text)}
+  .sys-picked .sys-info p{margin:0 0 6px;font-size:11.5px;color:var(--text-2);line-height:1.4}
+  .sys-picked .sys-meta{font-size:10.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+  .sys-picked .sys-meta .status{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;font-weight:700;font-size:10px}
+  .sys-picked .sys-meta .status.good{background:var(--ok-soft);color:var(--ok)}
+  .sys-picked-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px dashed #C5D1F6}
+  .sys-picked-actions .btn{font-size:11px;padding:5px 9px}
+
+  /* Outputs preview */
+  .sys-outputs{display:flex;flex-direction:column;gap:6px;padding:10px;background:#F7F9FD;border:1px dashed var(--line-2);border-radius:10px}
+  .out-row{display:flex;gap:10px;align-items:center;padding:6px 8px;background:#fff;border:1px solid var(--line);border-radius:8px}
+  .out-pill{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:13px;flex-shrink:0}
+  .out-pill.ok{background:var(--ok-soft);color:var(--ok)}
+  .out-txt{display:flex;flex-direction:column;flex:1;min-width:0}
+  .out-txt b{font-size:12px;color:var(--text)}
+  .out-txt span{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .tokens .token .ic{font-size:6px;color:var(--ok);margin-right:1px}
+
+  /* Highlight newly-added demo node */
+  @keyframes popin{0%{transform:scale(.85);opacity:0}60%{transform:scale(1.05);opacity:1}100%{transform:scale(1);opacity:1}}
+  .node.just-added{animation:popin .4s ease-out;box-shadow:0 0 0 3px rgba(46,91,255,.18)}
+
+  /* ===== Hover action toolbar on each block (delete / duplicate / etc.) ===== */
+  .node .node-actions{position:absolute;top:6px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;z-index:4}
+  .node:hover .node-actions,.node.selected .node-actions{opacity:1}
+  .node .na{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;cursor:pointer;font-size:12px;color:var(--text-2);box-shadow:0 1px 3px rgba(16,24,40,.1);transition:all .12s}
+  .node .na:hover{background:var(--brand-soft);color:var(--brand);border-color:var(--brand);transform:scale(1.06)}
+  .node .na.danger:hover{background:var(--danger-soft);color:var(--danger);border-color:var(--danger)}
+  .node .na[data-tip]{position:relative}
+  .node .na[data-tip]:hover::after{content:attr(data-tip);position:absolute;top:calc(100% + 6px);right:0;background:#1E2A3A;color:#fff;font-size:10.5px;padding:4px 8px;border-radius:6px;white-space:nowrap;font-weight:500;z-index:5;box-shadow:0 4px 10px rgba(16,24,40,.2)}
+
+  /* Delete section in properties panel */
+  .danger-zone{margin-top:16px;padding:12px;background:#FDECEC;border:1px solid #F4B6B6;border-radius:10px}
+  .danger-zone h4{margin:0 0 4px;font-size:12.5px;color:var(--danger);font-weight:700;display:flex;align-items:center;gap:6px}
+  .danger-zone p{margin:0 0 10px;font-size:11px;color:#7F1D1D;line-height:1.5}
+  .btn-del{width:100%;background:#fff;border:1px solid var(--danger);color:var(--danger);padding:9px 12px;border-radius:9px;font-weight:700;font-size:12.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+  .btn-del:hover{background:var(--danger);color:#fff}
+
+  /* Delete confirmation modal */
+  .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+  .confirm-overlay.open{display:flex}
+  .confirm-box{background:#fff;border-radius:14px;padding:22px 24px;max-width:400px;width:calc(100% - 32px);box-shadow:var(--shadow-lg);animation:popin .2s ease-out}
+  .confirm-box .ic-big{width:44px;height:44px;border-radius:50%;background:var(--danger-soft);color:var(--danger);display:grid;place-items:center;font-size:22px;margin-bottom:10px}
+  .confirm-box h3{margin:0 0 6px;font-size:16px}
+  .confirm-box p{margin:0 0 6px;color:var(--text-2);font-size:13px;line-height:1.5}
+  .confirm-box .affected{background:#FEF4E6;border:1px solid #F7D9A3;border-radius:8px;padding:8px 10px;font-size:11.5px;color:#8A5A0A;margin:10px 0}
+  .confirm-box .buttons{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+
+  /* Shortcut hint bar */
+  .shortcut-hint{margin-top:12px;padding:8px 12px;background:#F7F9FD;border:1px dashed var(--line-2);border-radius:10px;color:var(--text-2);font-size:11.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .shortcut-hint .kbd{background:#fff;border:1px solid var(--line);padding:2px 7px;border-radius:5px;font-family:ui-monospace,monospace;font-size:10.5px;color:var(--text);box-shadow:inset 0 -1px 0 var(--line)}
+
+  /* ===== Tag picker modal ===== */
+  .tag-picker-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:1100;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px}
+  .tag-picker-overlay.open{display:flex}
+  .tag-picker-box{background:#fff;border-radius:16px;width:560px;max-width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);overflow:hidden;animation:popin .2s ease-out}
+  .tp-head{padding:18px 20px 12px;border-bottom:1px solid var(--line);position:relative}
+  .tp-head h3{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:6px}
+  .tp-head .tp-sub{display:block;color:var(--text-2);font-size:11.5px;line-height:1.55}
+  .tp-head .tp-sub b{color:var(--ok)}
+  .tp-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px;color:var(--text-2)}
+  .tp-close:hover{background:var(--brand-soft);color:var(--brand);border-color:var(--brand)}
+  .tp-search{margin:10px 20px 0;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;outline:none;font-family:inherit}
+  .tp-search:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .tp-body{padding:6px 20px 18px;overflow-y:auto;flex:1}
+  .tp-group{margin-top:14px}
+  .tp-group h4{margin:0 0 2px;font-size:12px;color:var(--text);font-weight:700;display:flex;align-items:center;gap:6px}
+  .tp-group .tp-count{background:var(--brand-soft);color:var(--brand);font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700}
+  .tp-group .tp-desc{margin:0 0 8px;color:var(--muted);font-size:11px;line-height:1.5}
+  .tp-items{display:flex;flex-direction:column;gap:4px}
+  .tp-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;transition:all .12s}
+  .tp-item:hover{background:var(--brand-soft);border-color:var(--brand)}
+  .tp-item.added{background:#F0FAF5;border-color:#BFE9D9;cursor:default;opacity:.75}
+  .tp-tag{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;background:var(--brand-soft);color:var(--brand);font-size:11.5px;font-weight:600;border:1px dashed #B9C7FF;white-space:nowrap}
+  .tp-origin{flex:1;color:var(--text-2);font-size:11px;line-height:1.4}
+  .tp-origin .src{color:var(--teal);font-weight:600}
+  .tp-add{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:700;color:var(--brand);font-size:14px}
+  .tp-item.added .tp-add{border-color:#BFE9D9;color:var(--ok);cursor:default}
+  .tp-new{background:#F7F9FD;border:1px dashed var(--line-2);border-radius:10px;padding:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .tp-new input{flex:1;min-width:140px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:12px;font-family:inherit}
+  .tp-new select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:12px;font-family:inherit;background:#fff}
+  .tp-foot{padding:10px 20px;border-top:1px solid var(--line);background:#FAFBFE;display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--text-2)}
+  .tp-foot .tp-done{background:var(--brand);color:#fff;border:1px solid var(--brand);padding:7px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px}
+
+  /* Compact condition summary in right panel */
+  .cond-compact{margin-top:10px;background:#F7F9FD;border:1px solid var(--line);border-radius:10px;padding:10px}
+  .cond-compact .cc-head{font-size:11.5px;color:var(--text-2);font-weight:700;display:flex;justify-content:space-between;margin-bottom:6px}
+  .cond-compact .cc-head span{color:var(--brand)}
+  .cond-compact .cc-row{font-size:11.5px;color:var(--text);padding:4px 0;display:flex;gap:6px;align-items:center}
+  .cond-compact .cc-row .tag{font-size:10.5px}
+
+  /* Inline rule-list editor in right panel */
+  .rule-list{display:flex;flex-direction:column;gap:6px;background:#F7F9FD;border:1px solid var(--line);border-radius:10px;padding:8px}
+  .rule-row{display:flex;align-items:center;gap:4px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:11.5px;flex-wrap:wrap}
+  .rule-row:hover{border-color:var(--brand)}
+  .r-op{color:var(--muted)}
+  .r-val{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-weight:700;font-size:11px;cursor:pointer}
+  .r-val.ok{background:var(--ok-soft);color:var(--ok)}
+  .r-val.warn{background:var(--warn-soft);color:var(--warn)}
+  .r-val.danger{background:var(--danger-soft);color:var(--danger)}
+  .r-arr{color:var(--muted)}
+  .r-target{flex:1;color:var(--text);font-weight:600;padding:2px 6px;border-radius:6px;cursor:pointer;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .r-target:hover{background:var(--brand-soft);color:var(--brand)}
+  .r-act{color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:4px}
+  .r-act:hover{background:var(--line);color:var(--brand)}
+  .rule-add{background:transparent;border:1.5px dashed var(--line-2);border-radius:8px;padding:8px;font-size:11.5px;color:var(--brand);font-weight:600;cursor:pointer;margin-top:2px}
+  .rule-add:hover{background:var(--brand-soft);border-style:solid;border-color:var(--brand)}
+
+  /* (wizard modal CSS removed — branching now happens in the flow editor only) */
+
+  .arrow{width:2px;height:18px;background:var(--line-2);position:relative}
+  .arrow::after{content:"";position:absolute;left:-4px;bottom:-1px;border-top:6px solid var(--line-2);border-left:5px solid transparent;border-right:5px solid transparent}
+  .arrow .label{position:absolute;left:12px;top:2px;font-size:11px;color:var(--muted);white-space:nowrap}
+  .branches{display:flex;gap:28px;align-items:flex-start;justify-content:center}
+  .branches > div{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .branch-label{font-size:11.5px;color:var(--text-2);background:#F3F6FB;border:1px solid var(--line);padding:3px 8px;border-radius:999px}
+  .leaf{width:170px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:12.5px;text-align:center;box-shadow:var(--shadow)}
+  .leaf.ok{background:var(--ok-soft);border-color:#BFE9D9;color:#0F6B51}
+  .leaf.warn{background:var(--warn-soft);border-color:#F7D9A3;color:#9A6A0A}
+  .leaf.danger{background:var(--danger-soft);border-color:#F4B6B6;color:#9B2525}
+
+  /* properties */
+  .props{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:16px;height:fit-content}
+  .props h3{margin:0 0 4px;font-size:14px}
+  .props .small{color:var(--muted);font-size:12px;margin-bottom:14px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--text-2);margin-bottom:6px}
+  .field .hint{color:var(--muted);font-size:11.5px;margin-top:4px;display:block}
+  .field input,.field textarea,.field select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:13px;font-family:inherit;background:#fff}
+  .field textarea{min-height:80px;resize:vertical}
+  .tokens{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .token{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;background:var(--brand-soft);color:var(--brand);font-size:11.5px;font-weight:600;cursor:pointer;border:1px dashed #B9C7FF}
+  .token:hover{background:#DDE5FF}
+  .token .ic{font-size:10px}
+
+  /* ====== Screen 3 : node detail — wizard ====== */
+  .wizard-head{display:flex;align-items:center;gap:14px;padding:18px 20px;background:linear-gradient(120deg,#EEF2FF,#F1ECFE);border-bottom:1px solid var(--line)}
+  .wizard-head .ic{width:44px;height:44px;border-radius:12px;background:#fff;display:grid;place-items:center;font-size:22px;box-shadow:var(--shadow)}
+  .wizard-head h2{margin:0;font-size:16px}
+  .wizard-head p{margin:3px 0 0;color:var(--text-2);font-size:12.5px}
+
+  .steps{display:flex;border-bottom:1px solid var(--line);background:#FAFBFE}
+  .step{flex:1;padding:14px 16px;display:flex;align-items:center;gap:10px;border-right:1px solid var(--line);color:var(--text-2);font-size:13px;position:relative}
+  .step:last-child{border-right:none}
+  .step .num{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#E3E8F0;color:var(--muted);font-weight:700;font-size:12px;flex-shrink:0}
+  .step.done .num{background:var(--ok);color:#fff}
+  .step.current{background:#fff;color:var(--text)}
+  .step.current .num{background:var(--brand);color:#fff}
+  .step b{display:block;font-weight:600}
+  .step span{font-size:11.5px;color:var(--muted)}
+  .step.current span{color:var(--text-2)}
+
+  .wizard-body{padding:22px 28px}
+  .wizard-question{font-size:17px;font-weight:700;margin:0 0 6px}
+  .wizard-desc{color:var(--text-2);font-size:13px;margin:0 0 20px}
+
+  .select-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+  .sel{border:1.5px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;background:#fff;transition:all .15s}
+  .sel:hover{border-color:var(--brand-2);background:#FAFBFE}
+  .sel.selected{border-color:var(--brand);background:var(--brand-soft);box-shadow:0 0 0 3px rgba(46,91,255,.12)}
+  .sel .ic{font-size:22px;margin-bottom:8px}
+  .sel h4{margin:0 0 3px;font-size:13.5px}
+  .sel p{margin:0;color:var(--muted);font-size:11.5px;line-height:1.5}
+  .sel.selected::after{content:"✓";position:absolute;top:10px;right:12px;color:var(--brand);font-weight:700}
+  .sel{position:relative}
+
+  /* Sentence builder */
+  .sentence{background:#FAFBFE;border:1.5px dashed #C7D0E0;border-radius:12px;padding:22px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:15px;line-height:1.9;color:var(--text);margin-bottom:18px}
+  .blank{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;background:#fff;border:1.5px solid var(--brand);color:var(--brand);font-weight:700;cursor:pointer;font-size:13.5px}
+  .blank.filled{background:var(--brand);color:#fff}
+  .blank .ic{font-size:10px;opacity:.85}
+  .sentence .plain{color:var(--text)}
+
+  /* Condition cards */
+  .cond-list{display:flex;flex-direction:column;gap:10px}
+  .cond{display:grid;grid-template-columns:32px 1fr 32px;gap:12px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fff}
+  .cond.highlight{background:#F7FBFF;border-color:#C5DEFE}
+  .cond .num-bubble{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand);font-weight:700;font-size:12px}
+  .cond-body{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13.5px}
+  .cond-body .result{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;background:var(--ok-soft);color:var(--ok);font-weight:600;font-size:12px}
+  .cond-body .result.warn{background:var(--warn-soft);color:var(--warn)}
+  .cond-body .result.danger{background:var(--danger-soft);color:var(--danger)}
+  .cond-body .pill-v{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:#F1F5FA;border:1px solid var(--line);font-weight:600;font-size:12.5px;color:var(--text)}
+  .cond-body .pill-v.info{background:var(--brand-soft);color:var(--brand);border-color:#CED9FF}
+  .cond-body .pill-v.ok{background:var(--ok-soft);color:var(--ok);border-color:#BFE9D9}
+  .cond .drag{color:var(--muted);text-align:center;cursor:grab}
+  .add-cond{text-align:center;padding:12px;border:1.5px dashed var(--line-2);border-radius:12px;color:var(--brand);font-weight:600;cursor:pointer;background:#fff}
+  .add-cond:hover{background:var(--brand-soft)}
+
+  .wizard-nav{border-top:1px solid var(--line);background:#FAFBFE;padding:14px 22px;display:flex;gap:8px;align-items:center}
+  .wizard-nav .progress{flex:1;display:flex;align-items:center;gap:10px}
+  .wizard-nav .bar{flex:1;height:6px;background:#E3E8F0;border-radius:999px;overflow:hidden}
+  .wizard-nav .bar span{display:block;height:100%;background:var(--brand);border-radius:999px}
+  .wizard-nav .pct{color:var(--muted);font-size:12px;font-weight:600}
+
+  /* Info callouts */
+  .callout{display:flex;gap:12px;padding:14px;border-radius:12px;font-size:12.5px;line-height:1.55;margin-bottom:14px}
+  .callout.info{background:#EEF4FF;color:#1E40AF;border:1px solid #C8D7FA}
+  .callout.tip{background:#FEF9E7;color:#8A6100;border:1px solid #F4E5AB}
+  .callout.warn{background:#FEF4E6;color:#9A6A0A;border:1px solid #F7D9A3}
+  .callout .ic{font-size:18px;flex-shrink:0}
+  .callout b{display:block;margin-bottom:3px}
+
+  /* ====== Screen 4 : system check connection (non-dev) ====== */
+  .sys-grid{display:grid;grid-template-columns:320px 1fr;gap:14px}
+  .sys-list .card-body{padding:8px}
+  .sys-item{display:flex;gap:10px;padding:12px;border-radius:10px;cursor:pointer;align-items:center}
+  .sys-item:hover{background:var(--brand-soft)}
+  .sys-item.active{background:var(--brand-soft)}
+  .sys-item .ic{width:38px;height:38px;border-radius:10px;background:#fff;display:grid;place-items:center;font-size:18px;border:1px solid var(--line)}
+  .sys-item h4{margin:0;font-size:13.5px}
+  .sys-item p{margin:2px 0 0;color:var(--muted);font-size:11.5px}
+  .sys-item .status{margin-left:auto;font-size:10.5px;padding:3px 7px;border-radius:999px;font-weight:700}
+  .status.good{background:var(--ok-soft);color:var(--ok)}
+  .status.bad{background:var(--danger-soft);color:var(--danger)}
+  .status.new{background:var(--purple-soft);color:var(--purple)}
+
+  .input-stack{display:flex;flex-direction:column;gap:14px}
+  .map-row{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;padding:10px;background:#FAFBFE;border:1px solid var(--line);border-radius:10px}
+  .map-row .arrow-ic{color:var(--muted)}
+  .map-row select, .map-row input{border:1px solid var(--line);padding:8px 10px;border-radius:8px;font-size:12.5px;background:#fff;width:100%}
+  .var-inventory{display:flex;gap:8px;flex-wrap:wrap}
+  .var-inventory .token{cursor:pointer}
+
+  /* ====== Screen 5 : preview ====== */
+  .preview-grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
+  .phone{background:#0F172A;border-radius:34px;padding:14px;box-shadow:0 12px 40px rgba(15,23,42,.25);margin:auto;max-width:360px}
+  .phone-top{color:#A6B0C3;font-size:11px;display:flex;justify-content:space-between;padding:2px 14px 8px}
+  .phone-screen{background:#F1F4FA;border-radius:22px;padding:16px 12px;min-height:540px;display:flex;flex-direction:column;gap:10px}
+  .phone-title{text-align:center;color:var(--text-2);font-size:11.5px;background:#fff;border-radius:10px;padding:6px;margin-bottom:6px;border:1px solid var(--line)}
+  .bubble{max-width:84%;padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.5;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .bubble.bot{background:#fff;align-self:flex-start;border-top-left-radius:4px}
+  .bubble.user{background:var(--brand);color:#fff;align-self:flex-end;border-top-right-radius:4px}
+  .bubble.sys{background:var(--warn-soft);color:#8A5A0A;align-self:center;font-size:11px;padding:6px 10px;border-radius:999px}
+  .choices{display:flex;flex-direction:column;gap:6px;align-self:flex-start;width:100%}
+  .choice-btn{padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:10px;font-size:12.5px;color:var(--brand);font-weight:600;text-align:left}
+  .input-row{margin-top:auto;display:flex;gap:6px;padding:8px;background:#fff;border-radius:14px;border:1px solid var(--line)}
+  .input-row input{flex:1;border:none;outline:none;font-size:13px}
+  .input-row button{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:6px 12px;font-weight:600;font-size:12px}
+
+  .trace{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+  .trace-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center}
+  .trace-head h3{margin:0;font-size:14px}
+  .trace-head .grow{flex:1}
+  .trace-body{padding:8px 0;flex:1;overflow:auto}
+  .tr-item{display:grid;grid-template-columns:22px 90px 1fr;gap:10px;padding:10px 18px;font-size:12.5px;border-bottom:1px dashed #EEF1F6;align-items:center}
+  .tr-item:last-child{border-bottom:none}
+  .tr-item .dot{width:10px;height:10px;border-radius:50%;background:var(--brand);justify-self:center}
+  .tr-item.warn .dot{background:var(--warn)}
+  .tr-item.ok .dot{background:var(--ok)}
+  .tr-item.api .dot{background:var(--purple)}
+  .tr-item time{color:var(--muted);font-size:11px}
+  .tr-item .msg{color:var(--text)}
+  .tr-item .msg b{color:var(--brand)}
+  .tr-item.api .msg b{color:var(--purple)}
+
+  /* footers + misc */
+  .footer{color:var(--muted);font-size:12px;text-align:center;padding:26px 0 10px}
+  .kbd{background:#EEF1F6;border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:11px;color:var(--text-2);font-family:ui-monospace,monospace}
+  .divider{height:1px;background:var(--line);margin:16px 0}
+
+  .legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:#fff;border:1px dashed var(--line-2);padding:10px 14px;border-radius:12px;margin-bottom:14px;font-size:12px;color:var(--text-2)}
+  .legend .dot{width:12px;height:12px;border-radius:3px}
+  .legend .g-q{background:var(--brand)}
+  .legend .g-c{background:var(--purple)}
+  .legend .g-a{background:var(--teal)}
+  .legend .g-m{background:var(--ok)}
+  .legend .g-h{background:var(--warn)}
+
+  /* ====== Developer API details (collapsible) ====== */
+  .dev-details{background:#0F172A;color:#E5E9F2;border:1px solid #1F2A3F;border-radius:14px;margin-top:10px;overflow:hidden}
+  .dev-details[open] .sum-caret{transform:rotate(180deg)}
+  .dev-details summary{list-style:none;cursor:pointer;padding:14px 18px;display:flex;align-items:center;gap:10px;background:linear-gradient(180deg,#1A253B,#0F172A);border-bottom:1px solid #1F2A3F}
+  .dev-details summary::-webkit-details-marker{display:none}
+  .dev-details .sum-ic{font-size:18px}
+  .dev-details .sum-title{font-weight:700;font-size:13.5px;color:#fff}
+  .dev-details .sum-sub{color:#8A97B3;font-size:11.5px;margin-left:8px}
+  .dev-details .sum-caret{margin-left:auto;color:#8A97B3;transition:transform .2s}
+  .dev-inner{padding:16px 18px;font-size:12.5px;color:#CBD4E4}
+  .dev-inner code{background:#1A2336;color:#9ECBFF;padding:1px 6px;border-radius:4px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
+  .dev-tabs{display:flex;gap:4px;flex-wrap:wrap;background:#111B2E;border:1px solid #1F2A3F;padding:4px;border-radius:10px;margin-bottom:14px}
+  .dev-tab{padding:7px 12px;border-radius:7px;font-size:12px;color:#A6B0C3;cursor:pointer;font-weight:500}
+  .dev-tab.active{background:#2E5BFF;color:#fff}
+  .dev-h{font-size:13px;color:#fff;margin:16px 0 8px;letter-spacing:.01em;font-weight:700;display:flex;align-items:center;gap:6px}
+  .dev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .dev-grid .field{margin-bottom:0}
+  .dev-grid .field label{color:#A6B0C3;font-size:11.5px;font-weight:600;margin-bottom:4px}
+  .dev-grid .field input,.dev-grid .field select,.dev-grid .field textarea{background:#121D33;border:1px solid #24314C;color:#E5E9F2;padding:8px 10px;border-radius:8px;font-size:12.5px;font-family:inherit;width:100%}
+  .dev-grid .field .hint{color:#7C8BA7;font-size:11px;display:block;margin-top:4px}
+  .dev-grid .field .hint code{font-size:10.5px}
+  .dev-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .dev-label{display:block;color:#A6B0C3;font-size:11.5px;font-weight:600;margin-bottom:6px}
+  .code-block{background:#0A1324;border:1px solid #24314C;color:#9ECBFF;padding:12px 14px;border-radius:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.55;white-space:pre;overflow:auto;margin:0;max-height:260px}
+  .dev-table{width:100%;border-collapse:collapse;background:#111B2E;border:1px solid #24314C;border-radius:10px;overflow:hidden;margin-top:4px;font-size:12px}
+  .dev-table th{background:#18233B;color:#A6B0C3;text-align:left;padding:8px 10px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #24314C}
+  .dev-table td{padding:8px 10px;border-bottom:1px solid #1B2741;color:#D4DCEB}
+  .dev-table tr:last-child td{border-bottom:none}
+  .dev-table .tag{filter:brightness(.95)}
+  .dev-inner .callout.tip{background:#2B2110;color:#FCE5A5;border-color:#5A4416}
+  .dev-inner .callout.tip code{background:#3A2E15;color:#FCE5A5}
+  .dev-inner .callout.warn{background:#2A1616;color:#FBC7C7;border-color:#5B2424}
+  .dev-inner .sentence{background:#121D33;border-color:#24314C;color:#E5E9F2}
+  .dev-inner .sentence .blank.filled{background:#2E5BFF;color:#fff;border-color:#2E5BFF}
+  .dev-inner .btn{background:#1A2640;border-color:#24314C;color:#E5E9F2}
+  .dev-inner .btn.soft{background:#14315E;color:#9ECBFF;border-color:#1F4686}
+
+  @media (max-width:1200px){
+    .editor{grid-template-columns:220px 1fr 320px}
+    .sys-grid{grid-template-columns:280px 1fr}
+    .preview-grid{grid-template-columns:340px 1fr}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-ic">💬</span> 챗봇 스튜디오</div>
+    <div class="nav-section">워크스페이스</div>
+    <div class="nav-item"><span class="ic">🏠</span> 홈</div>
+    <div class="nav-item active"><span class="ic">🧩</span> 시나리오</div>
+    <div class="nav-item"><span class="ic">📚</span> FAQ 지식베이스</div>
+    <div class="nav-item"><span class="ic">🔌</span> 시스템 연결</div>
+    <div class="nav-item"><span class="ic">📊</span> 사용 현황</div>
+    <div class="nav-section">설정</div>
+    <div class="nav-item"><span class="ic">👥</span> 팀원 / 권한</div>
+    <div class="nav-item"><span class="ic">⚙</span> 환경 설정</div>
+    <div class="sidebar-bottom">
+      <div class="avatar">박</div>
+      <div>
+        <div style="color:#fff;font-weight:600">박초아 기획</div>
+        <div>한일네트웍스 · 운영팀</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div class="crumbs">시나리오 &nbsp;/&nbsp; 재배송 &nbsp;/&nbsp; <b>배송누락 안내</b></div>
+      <span class="pill"><span class="dot"></span> 자동 저장됨 · 1분 전</span>
+      <div class="grow"></div>
+      <button class="btn ghost sm">⌨ 단축키</button>
+      <button class="btn sm">🔄 이전 버전</button>
+      <button class="btn soft sm">👁 고객 화면 미리보기</button>
+      <button class="btn primary sm">🚀 배포하기</button>
+    </div>
+
+    <div class="body">
+      <!-- Hero intro -->
+      <section class="intro">
+        <div class="ic">✨</div>
+        <div>
+          <h1>시나리오를 블록처럼 쌓아서 만들어보세요</h1>
+          <p>코드나 개발 지식 없이도, 고객이 들을 질문과 대답을 순서대로 연결하면 챗봇이 완성돼요. 자동 확인이 필요하면 "시스템에 물어보기"를 끼워 넣기만 하면 됩니다.</p>
+        </div>
+        <div class="cta">
+          <button class="btn">📖 사용 가이드</button>
+          <button class="btn primary">+ 새 시나리오</button>
+        </div>
+      </section>
+
+      <!-- Screen tabs -->
+      <div class="tabs">
+        <div class="tab active" data-screen="s1"><span class="step">1</span>시나리오 목록</div>
+        <div class="tab" data-screen="s2"><span class="step">2</span>시나리오 만들기</div>
+        <div class="tab" data-screen="s4"><span class="step">3</span>시스템 연결</div>
+        <div class="tab" data-screen="s5"><span class="step">4</span>테스트 & 배포</div>
+      </div>
+
+      <!-- =========================== Screen 1 =========================== -->
+      <section class="screen active" id="s1">
+        <div class="screen-title">
+          <span class="no">1</span>
+          <h2>시나리오 목록</h2>
+          <span class="hint">운영 중이거나 작성 중인 모든 챗봇 시나리오를 볼 수 있어요.</span>
+        </div>
+
+        <div class="list-toolbar">
+          <div class="search">
+            <span class="ic">🔎</span>
+            <input type="text" placeholder="시나리오 이름 또는 키워드 검색 (예: 배송, 교환, 취소)" />
+          </div>
+          <span class="chip active">전체 28</span>
+          <span class="chip">🟢 운영 중 22</span>
+          <span class="chip">📝 작성 중 4</span>
+          <span class="chip">🧪 테스트 2</span>
+          <span class="chip">분류 ▾</span>
+          <button class="btn">📂 가져오기</button>
+          <button class="btn primary">+ 새 시나리오 만들기</button>
+        </div>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:34%">시나리오</th>
+              <th>분류</th>
+              <th>상태</th>
+              <th>시스템 연결</th>
+              <th>최근 수정</th>
+              <th style="width:90px">담당</th>
+              <th style="width:60px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="scen-title"><b>배송누락 안내</b><span>고객이 일부 상품을 받지 못했을 때 안내</span></td>
+              <td><span class="tag brand">재배송</span></td>
+              <td><span class="tag warn">📝 작성 중 · 90%</span></td>
+              <td><span class="tag purple">3개 연결</span></td>
+              <td>5분 전 · 박초아</td>
+              <td><div class="avatar" style="width:26px;height:26px;font-size:11px">박</div></td>
+              <td><button class="btn sm">열기 →</button></td>
+            </tr>
+            <tr>
+              <td class="scen-title"><b>배송 지연 조회</b><span>택배 배송이 늦어질 때 추적 및 안내</span></td>
+              <td><span class="tag brand">재배송</span></td>
+              <td><span class="tag ok">🟢 운영 중</span></td>
+              <td><span class="tag purple">2개 연결</span></td>
+              <td>2일 전 · 김대리</td>
+              <td><div class="avatar" style="width:26px;height:26px;font-size:11px;background:linear-gradient(135deg,#10B981,#059669)">김</div></td>
+              <td><button class="btn sm">열기 →</button></td>
+            </tr>
+            <tr>
+              <td class="scen-title"><b>주문 취소 · 환불</b><span>주문 단계별 취소와 환불 처리 안내</span></td>
+              <td><span class="tag">주문</span></td>
+              <td><span class="tag ok">🟢 운영 중</span></td>
+              <td><span class="tag purple">4개 연결</span></td>
+              <td>어제 · 박초아</td>
+              <td><div class="avatar" style="width:26px;height:26px;font-size:11px">박</div></td>
+              <td><button class="btn sm">열기 →</button></td>
+            </tr>
+            <tr>
+              <td class="scen-title"><b>교환 신청</b><span>사이즈/색상 교환 접수</span></td>
+              <td><span class="tag">교환</span></td>
+              <td><span class="tag warn">🧪 테스트</span></td>
+              <td><span class="tag purple">1개 연결</span></td>
+              <td>3시간 전 · 이과장</td>
+              <td><div class="avatar" style="width:26px;height:26px;font-size:11px;background:linear-gradient(135deg,#7C3AED,#5B21B6)">이</div></td>
+              <td><button class="btn sm">열기 →</button></td>
+            </tr>
+            <tr>
+              <td class="scen-title"><b>회원가입 혜택</b><span>신규 가입 쿠폰 및 적립금 안내</span></td>
+              <td><span class="tag">회원</span></td>
+              <td><span class="tag muted">⏸ 보관함</span></td>
+              <td><span class="tag muted">연결 없음</span></td>
+              <td>지난주 · 박초아</td>
+              <td><div class="avatar" style="width:26px;height:26px;font-size:11px">박</div></td>
+              <td><button class="btn sm">열기 →</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- =========================== Screen 2 =========================== -->
+      <section class="screen" id="s2">
+        <div class="screen-title">
+          <span class="no">2</span>
+          <h2>시나리오 만들기 · <span style="color:var(--brand-2)">배송누락 안내</span></h2>
+          <span class="hint">블록을 끌어다 연결만 하면 시나리오가 만들어져요. 저장 버튼이 없어도 자동으로 저장됩니다.</span>
+        </div>
+
+        <div class="legend vis">
+          <span class="big">🎭 블록이 고객에게 보이는지 알려드려요 :</span>
+          <span><span class="chip-ex seen">👁 고객 화면</span> 이 블록은 고객이 직접 보게 돼요 (질문, 선택지, 안내, 상담사 연결)</span>
+          <span><span class="chip-ex hidden-tag">🔒 내부 처리</span> 이 블록은 시스템 내부에서만 실행돼요 (자동 확인, 시나리오 이동)</span>
+        </div>
+
+        <div class="legend">
+          <strong>블록 색상 안내 :</strong>
+          <span><i class="dot g-q" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--brand)"></i> 질문하기</span>
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--purple)"></i> 선택지 보여주기</span>
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--teal)"></i> 자동 확인 (시스템에 물어보기)</span>
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--ok)"></i> 안내 메시지</span>
+          <span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--warn)"></i> 상담사 연결</span>
+        </div>
+
+        <div class="editor">
+          <!-- Palette -->
+          <aside class="palette">
+            <h3>📦 만들기 블록 · 끌어다 놓기</h3>
+            <div class="block q" draggable="true" data-type="q" data-icon="❓" data-title="질문하기" data-visible="seen">
+              <div class="ic">❓</div>
+              <div><h4>질문하기</h4><p>고객에게 물어보고 답을 받아요</p><span class="vis-dot seen">👁 고객 화면</span></div>
+            </div>
+            <div class="block c" draggable="true" data-type="c" data-icon="📋" data-title="선택지 보여주기" data-visible="seen">
+              <div class="ic">📋</div>
+              <div><h4>선택지 보여주기</h4><p>버튼으로 고르게 해요</p><span class="vis-dot seen">👁 고객 화면</span></div>
+            </div>
+            <div class="block a" draggable="true" data-type="a" data-icon="🔍" data-title="자동 확인" data-visible="hidden">
+              <div class="ic">🔍</div>
+              <div><h4>자동 확인</h4><p>주문·배송 시스템에 물어봐요</p><span class="vis-dot hidden-tag">🔒 내부 처리</span></div>
+            </div>
+            <div class="block m" draggable="true" data-type="m" data-icon="💬" data-title="안내 메시지" data-visible="seen">
+              <div class="ic">💬</div>
+              <div><h4>안내 메시지</h4><p>답변을 보여주고 끝내요</p><span class="vis-dot seen">👁 고객 화면</span></div>
+            </div>
+            <div class="block h" draggable="true" data-type="h" data-icon="🙋" data-title="상담사 연결" data-visible="seen">
+              <div class="ic">🙋</div>
+              <div><h4>상담사 연결</h4><p>어려울 땐 사람에게 넘겨요</p><span class="vis-dot seen">👁 고객 화면</span></div>
+            </div>
+            <div class="block l" draggable="true" data-type="l" data-icon="🔗" data-title="다른 시나리오 연결" data-visible="hidden">
+              <div class="ic">🔗</div>
+              <div><h4>다른 시나리오 연결</h4><p>이어지는 시나리오로 보내요</p><span class="vis-dot hidden-tag">🔒 내부 처리</span></div>
+            </div>
+            <div class="tip-drag">블록을 <b>끌어서 오른쪽 캔버스</b>에 놓으면 자동으로 연결돼요. 이미 있는 노드 아래의 <b>＋ 분기 추가</b> 버튼으로 <b>True / False</b> 같은 화살표도 만들 수 있어요.</div>
+
+            <div class="shortcut-hint">
+              <span>🗑 블록 삭제 단축키</span>
+              <span class="kbd">Delete</span>
+              <span style="color:var(--muted)">또는</span>
+              <span class="kbd">Backspace</span>
+              <span style="color:var(--muted);flex-basis:100%;font-size:11px;line-height:1.5">블록에 마우스를 올리면 <b>📋 복제 / 🗑 삭제</b> 버튼이 나타나요. 블록을 클릭해 선택한 뒤 키보드로도 지울 수 있어요.</span>
+            </div>
+
+            <div class="divider"></div>
+            <h3>✨ 템플릿 추천</h3>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <button class="btn sm soft" style="justify-content:flex-start">📦 배송 문의 기본형</button>
+              <button class="btn sm" style="justify-content:flex-start">🧾 환불/교환 접수</button>
+              <button class="btn sm" style="justify-content:flex-start">📞 상담사 연결 흐름</button>
+            </div>
+          </aside>
+
+          <!-- Canvas -->
+          <section class="canvas" id="flowCanvas">
+            <div class="canvas-hd">
+              <h3>흐름 편집기</h3>
+              <span class="sub" id="nodeCount">&nbsp;· 블록 5개 · 자동 확인 2개</span>
+              <div class="zoom">
+                <button>− 축소</button>
+                <button>100%</button>
+                <button>+ 확대</button>
+                <button>↺ 가운데 맞춤</button>
+              </div>
+            </div>
+
+            <div class="flow" id="flow">
+              <div class="node q visible">
+                <span class="vis-tag seen">👁 고객 화면</span>
+                <div class="node-actions">
+                  <button class="na" data-tip="복제" onclick="duplicateNode(event)">📋</button>
+                  <button class="na danger" data-tip="삭제" onclick="askDeleteNode(event)">🗑</button>
+                </div>
+                <div class="node-type"><span class="chip-ic">❓</span>질문하기 · 시작</div>
+                <div class="txt">"배송에 어떤 문제가 있으신가요?"</div>
+                <div class="meta">고객 응답을 자동으로 분석해 다음 단계로 보내요</div>
+                <div class="preview-bubble">
+                  <div><span class="label">고객 화면 미리보기</span>배송에 어떤 문제가 있으신가요?</div>
+                </div>
+                <div class="handle-bottom" title="여기서 끌어서 다음 블록에 연결">＋</div>
+              </div>
+              <div class="arrow"><span class="label" title="클릭해서 이름 바꾸기">다음 →</span></div>
+              <div class="node c visible">
+                <span class="vis-tag seen">👁 고객 화면</span>
+                <div class="node-actions">
+                  <button class="na" data-tip="복제" onclick="duplicateNode(event)">📋</button>
+                  <button class="na danger" data-tip="삭제" onclick="askDeleteNode(event)">🗑</button>
+                </div>
+                <div class="node-type"><span class="chip-ic">📋</span>선택지 보여주기</div>
+                <div class="txt">4개 선택지: 배송 조회 / 지연 / 누락 / 오배송</div>
+                <div class="meta">고객이 '배송누락'을 고르면 아래로 이어져요</div>
+                <div class="preview-bubble bot-choices">
+                  <span class="label" style="color:var(--muted);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">고객이 볼 버튼</span>
+                  <span class="mini-btn">📦 배송 조회</span>
+                  <span class="mini-btn">🕐 배송 지연</span>
+                  <span class="mini-btn" style="background:var(--brand-soft);border-color:#B9C7FF">📭 배송누락</span>
+                  <span class="mini-btn">🔄 오배송</span>
+                </div>
+                <div class="handle-bottom" title="끌어서 연결">＋</div>
+              </div>
+              <div class="arrow"><span class="label">선택: 📭 배송누락 <span class="ic">✎</span></span></div>
+              <div class="node a internal selected">
+                <span class="vis-tag hidden-tag">🔒 내부 처리</span>
+                <div class="node-actions">
+                  <button class="na" data-tip="복제" onclick="duplicateNode(event)">📋</button>
+                  <button class="na danger" data-tip="삭제" onclick="askDeleteNode(event)">🗑</button>
+                </div>
+                <div class="node-type"><span class="chip-ic">🔍</span>자동 확인 · 분리송장 여부 <span style="margin-left:auto;color:var(--teal);font-size:11px">⚙ 주문 시스템</span></div>
+                <div class="txt">주문번호로 <b>분리송장 등록 여부</b>를 시스템에 물어봐요.</div>
+                <div class="meta">결과는 3가지로 나뉘어요 · <span style="color:var(--ok)">등록됨</span> / <span style="color:var(--warn)">등록 안 됨</span> / <span style="color:var(--danger)">오류</span></div>
+                <div class="internal-note">
+                  <div><b>고객에게는 안 보여요.</b> 시스템이 조용히 주문 서버에 물어보고 그 결과에 따라 다음 분기로 이동해요. (고객 화면엔 "확인 중..." 로딩 표시만 잠깐 뜸)</div>
+                </div>
+                <div class="add-branch">
+                  <span class="pop" id="branchPop">
+                    <button class="branch-btn" onclick="togglePop(event)">＋ 분기 추가</button>
+                    <div class="popover" style="display:none">
+                      <h5>화살표(분기) 종류를 골라주세요</h5>
+                      <div class="pop-opt"><div class="ic t">✅</div><div><h6>예 · True</h6><p>조건을 만족할 때 이 길로</p></div></div>
+                      <div class="pop-opt"><div class="ic f">❌</div><div><h6>아니오 · False</h6><p>조건을 만족하지 않을 때</p></div></div>
+                      <div class="pop-opt"><div class="ic c">🔀</div><div><h6>여러 갈래로 나누기</h6><p>값에 따라 3개 이상으로 분기</p></div></div>
+                      <div class="pop-opt"><div class="ic s">⚠</div><div><h6>오류 / 기본값</h6><p>어떤 조건에도 해당하지 않을 때</p></div></div>
+                      <div class="pop-foot">
+                        <input placeholder="또는 직접 입력 (예: VIP 회원이면)" />
+                        <button class="btn sm primary">추가</button>
+                      </div>
+                    </div>
+                  </span>
+                  <button class="branch-btn true">✅ 이미 있음</button>
+                  <button class="branch-btn false">❌ 이미 있음</button>
+                  <button class="branch-btn">⚠ 이미 있음</button>
+                </div>
+                <div class="handle-bottom">＋</div>
+              </div>
+
+              <div class="arrow"></div>
+              <div class="branches">
+                <div>
+                  <span class="branch-label true-br" style="background:var(--ok-soft);color:var(--ok);border-color:#BFE9D9">✅ True · 등록됨 <span class="ic" style="margin-left:3px;font-size:9px;opacity:.7">✎</span></span>
+                  <div class="leaf ok">
+                    <span class="vis-tag seen">👁</span>
+                    💬 S4. 분리배송 안내<br /><small>"나머지 상품은 ○월 ○일 도착 예정이에요."</small>
+                  </div>
+                </div>
+                <div>
+                  <span class="branch-label false-br" style="background:var(--danger-soft);color:var(--danger);border-color:#F4B6B6">❌ False · 등록 안 됨 <span class="ic" style="margin-left:3px;font-size:9px;opacity:.7">✎</span></span>
+                  <div class="leaf warn">
+                    <span class="vis-tag seen">👁</span>
+                    🙋 A2. 판매자에게 확인 요청<br /><small>"분리송장 회신 후 안내드릴게요."</small>
+                  </div>
+                </div>
+                <div>
+                  <span class="branch-label" style="background:var(--warn-soft);color:var(--warn);border-color:#F7D9A3">⚠ 기타 · 시스템 오류 <span class="ic" style="margin-left:3px;font-size:9px;opacity:.7">✎</span></span>
+                  <div class="leaf danger">
+                    <span class="vis-tag seen">👁</span>
+                    🙋 S0. 상담사 연결<br /><small>"지금은 자동 확인이 어려워요. 상담사에게 연결할게요."</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="drop-zone" id="dropZone"></div>
+            </div>
+
+            <div style="margin-top:16px;padding:12px 14px;background:#F7F9FD;border:1px dashed var(--line-2);border-radius:10px;display:flex;align-items:center;gap:10px;color:var(--text-2);font-size:12px">
+              <span style="font-size:18px">🎭</span>
+              <div>
+                <b style="color:var(--text)">블록 왼쪽 테두리를 보세요.</b>
+                <span style="color:var(--brand);font-weight:700">파란 테두리 + 👁 고객 화면</span> 블록만 실제로 고객에게 보이고,
+                <span style="color:#64748B;font-weight:700">회색 빗금 + 🔒 내부 처리</span> 블록은 뒤에서 시스템이 대신 처리해요.
+                <button class="btn sm soft" style="margin-left:10px">👁 고객이 보는 것만 보기</button>
+                <button class="btn sm" style="margin-left:4px">🔒 내부 흐름 숨기기</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Properties -->
+          <aside class="props">
+            <h3>🧩 선택한 블록</h3>
+            <div class="small">자동 확인 · 분리송장 여부</div>
+
+            <div class="field">
+              <label>이 블록의 이름 <span style="color:var(--muted);font-weight:400">(나만 보는 이름이에요)</span></label>
+              <input type="text" value="분리송장 여부 확인" />
+            </div>
+
+            <div class="field">
+              <label>어떤 시스템 창구에 물어볼까요?</label>
+              <div class="sys-picked">
+                <div class="sys-picked-head">
+                  <div class="sys-ic">📦</div>
+                  <div class="sys-info">
+                    <h5>주문 시스템 · 분리송장 등록 여부</h5>
+                    <p>고객의 주문번호로 분리송장 등록 여부를 조회해요</p>
+                    <div class="sys-meta">
+                      <span class="status good">🟢 정상 동작</span>
+                      <span>· 최근 성공률 98%</span>
+                      <span>· 등록자: 김IT (개발팀)</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="sys-picked-actions">
+                  <button class="btn sm" onclick="alert('12개 창구 중에서 고를 수 있어요')">🔄 다른 시스템으로 바꾸기</button>
+                  <button class="btn sm" onclick="document.querySelector('[data-screen=s4]').click()">🔌 시스템 연결 화면 열기</button>
+                  <button class="btn sm">🧪 테스트 호출</button>
+                </div>
+              </div>
+              <span class="hint">이 목록은 IT팀이 <b>Screen 4(시스템 연결)</b>에 미리 등록해둔 "창구"들이에요. 새로 필요한 게 있으면 IT팀에 요청하세요.</span>
+            </div>
+
+            <div class="field">
+              <label>시스템에 무엇을 알려줄까요? <span style="color:var(--muted);font-weight:400">(요청 정보)</span></label>
+              <div class="tokens">
+                <span class="token"><span class="ic">●</span> 📌 주문번호 <span style="color:#EF4444;font-size:10px;margin-left:2px">필수</span></span>
+                <span class="token">📌 회원 ID</span>
+                <span class="token add-tag" onclick="openTagPicker(event, 'send')">+ 정보 추가</span>
+              </div>
+              <span class="hint">고객과의 대화에서 수집한 📌 태그가 시스템에 그대로 전달돼요.</span>
+            </div>
+
+            <div class="field">
+              <label>받아올 정보 미리보기 <span style="color:var(--muted);font-weight:400">(응답 결과 → 📌 태그)</span></label>
+              <div class="sys-outputs">
+                <div class="out-row"><span class="out-pill ok">📬</span><div class="out-txt"><b>분리송장 상태</b><span>등록됨 / 등록 안 됨 / 지연</span></div></div>
+                <div class="out-row"><span class="out-pill ok">📅</span><div class="out-txt"><b>도착 예정일</b><span>예: 2026-04-23</span></div></div>
+                <div class="out-row"><span class="out-pill ok">📦</span><div class="out-txt"><b>분리 송장 목록</b><span>택배사 · 송장번호 목록</span></div></div>
+                <div class="out-row"><span class="out-pill ok">📝</span><div class="out-txt"><b>판매자 회신 여부</b><span>true / false</span></div></div>
+              </div>
+              <span class="hint">이 정보들은 아래 위저드 조건 카드나 다음 안내 메시지에서 <b>📌 태그로 끌어다 쓸 수 있어요.</b></span>
+            </div>
+
+            <div class="field">
+              <label>결과에 따라 어떻게 나눌까요? <span style="color:var(--muted);font-weight:400">(분기 규칙)</span></label>
+              <span class="hint" style="margin-bottom:8px">📬 분리송장 상태 값이 아래 조건에 맞으면 그 분기로 흐름이 이어져요. <b>왼쪽 캔버스의 화살표와 자동으로 연결</b>됩니다.</span>
+              <div class="rule-list">
+                <div class="rule-row">
+                  <span class="r-op">만약</span>
+                  <span class="r-val ok">등록됨</span>
+                  <span class="r-arr">→</span>
+                  <span class="r-target">S4. 분리배송 안내</span>
+                  <span class="r-act" title="수정">✎</span>
+                </div>
+                <div class="rule-row">
+                  <span class="r-op">만약</span>
+                  <span class="r-val warn">등록 안 됨</span>
+                  <span class="r-arr">→</span>
+                  <span class="r-target">A2. 판매자 확인</span>
+                  <span class="r-act" title="수정">✎</span>
+                </div>
+                <div class="rule-row">
+                  <span class="r-op">만약</span>
+                  <span class="r-val danger">오류 / 그 외</span>
+                  <span class="r-arr">→</span>
+                  <span class="r-target">S0. 상담사 연결</span>
+                  <span class="r-act" title="수정">✎</span>
+                </div>
+                <button class="rule-add">+ 분기 규칙 추가</button>
+              </div>
+              <div class="callout tip" style="padding:10px;margin-top:8px;font-size:11.5px">
+                <div class="ic">💡</div>
+                <div><b>캔버스에서 바로 분기를 만들어도 돼요.</b>자동 확인 블록 아래의 <b>＋ 분기 추가</b> 버튼으로 True/False 화살표를 만들면 이 목록에도 자동으로 나타나요.</div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="field">
+              <label>미리보기 테스트</label>
+              <button class="btn" style="width:100%;justify-content:center">▶ 이 블록만 테스트해보기</button>
+              <span class="hint">가상의 주문번호로 자동 확인을 시험해볼 수 있어요.</span>
+            </div>
+
+            <div class="danger-zone">
+              <h4>⚠ 블록 삭제</h4>
+              <p>이 블록을 지우면 <b>연결된 화살표와 하위 분기</b>도 같이 사라져요. 삭제 후에는 되돌릴 수 없으니 신중히 눌러주세요.</p>
+              <button class="btn-del" onclick="askDeleteSelected()">🗑 이 블록 삭제하기</button>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- (자동 확인 설정 위저드 제거됨 : 분기는 흐름 편집기에서 직접 처리) -->
+
+      <!-- hidden (deprecated) : old alternative block preview card -->
+      <div style="display:none">
+        <div class="card">
+          <div class="card-head">
+            <h2>다른 블록 편집 미리보기</h2>
+            <span class="sub">각 블록마다 문장형 편집기를 제공해요</span>
+          </div>
+          <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div style="border:1px solid var(--line);border-radius:12px;padding:14px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="background:var(--brand-soft);color:var(--brand);width:28px;height:28px;border-radius:8px;display:grid;place-items:center">❓</span><b>질문하기 블록</b></div>
+              <div class="sentence" style="padding:14px;margin-bottom:10px">
+                <span>고객에게</span>
+                <span class="blank filled">"주문번호를 알려주세요" <span class="ic">✎</span></span>
+                <span>라고 물어보고,</span>
+                <span class="blank filled">📦 주문번호 형식<span class="ic">▾</span></span>
+                <span>으로 답변을 기억해두기</span>
+              </div>
+              <div class="callout tip" style="margin:0"><div class="ic">💡</div><div>"숫자 10자리", "전화번호", "이메일" 등 자주 쓰는 형식을 미리 골라둘 수 있어요.</div></div>
+            </div>
+
+            <div style="border:1px solid var(--line);border-radius:12px;padding:14px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="background:var(--purple-soft);color:var(--purple);width:28px;height:28px;border-radius:8px;display:grid;place-items:center">📋</span><b>선택지 보여주기 블록</b></div>
+              <div class="sentence" style="padding:14px;margin-bottom:10px">
+                <span>다음 질문과 버튼들을 보여주기</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;gap:6px;align-items:center"><span style="width:22px;text-align:center;color:var(--muted)">1️⃣</span><input style="flex:1;border:1px solid var(--line);padding:7px 10px;border-radius:8px;font-size:13px" value="배송 조회" /><button class="btn sm">→ 연결</button></div>
+                <div style="display:flex;gap:6px;align-items:center"><span style="width:22px;text-align:center;color:var(--muted)">2️⃣</span><input style="flex:1;border:1px solid var(--line);padding:7px 10px;border-radius:8px;font-size:13px" value="배송 지연" /><button class="btn sm">→ 연결</button></div>
+                <div style="display:flex;gap:6px;align-items:center"><span style="width:22px;text-align:center;color:var(--muted)">3️⃣</span><input style="flex:1;border:1px solid var(--line);padding:7px 10px;border-radius:8px;font-size:13px" value="배송누락" /><button class="btn sm">→ 연결</button></div>
+                <div style="display:flex;gap:6px;align-items:center"><span style="width:22px;text-align:center;color:var(--muted)">4️⃣</span><input style="flex:1;border:1px solid var(--line);padding:7px 10px;border-radius:8px;font-size:13px" value="오배송" /><button class="btn sm">→ 연결</button></div>
+                <button class="btn sm soft" style="margin-top:4px">+ 선택지 추가</button>
+              </div>
+            </div>
+
+            <div style="border:1px solid var(--line);border-radius:12px;padding:14px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="background:var(--ok-soft);color:var(--ok);width:28px;height:28px;border-radius:8px;display:grid;place-items:center">💬</span><b>안내 메시지 블록</b></div>
+              <textarea style="width:100%;min-height:80px;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13px;font-family:inherit">안녕하세요 {고객이름}님, 주문하신 {주문번호} 건은 분리배송으로 {도착예정일}에 나머지 상품이 도착할 예정이에요 😊</textarea>
+              <div class="tokens" style="margin-top:8px">
+                <span class="token">📌 고객이름</span>
+                <span class="token">📌 주문번호</span>
+                <span class="token">📌 도착예정일</span>
+                <span class="token add-tag" onclick="openTagPicker(event, 'use')">+ 꺼내 쓸 정보 고르기</span>
+              </div>
+            </div>
+
+            <div style="border:1px solid var(--line);border-radius:12px;padding:14px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="background:var(--warn-soft);color:var(--warn);width:28px;height:28px;border-radius:8px;display:grid;place-items:center">🙋</span><b>상담사 연결 블록</b></div>
+              <div class="sentence" style="padding:14px">
+                <span>상담사에게 연결하고,</span>
+                <span class="blank filled">📞 배송 상담팀<span class="ic">▾</span></span>
+                <span>에게 아래 정보를 함께 전달하기</span>
+              </div>
+              <div class="tokens" style="margin-top:8px">
+                <span class="token">📌 고객이름</span>
+                <span class="token">📌 연락처</span>
+                <span class="token">📌 주문번호</span>
+                <span class="token">📌 지금까지 한 질문</span>
+                <span class="token add-tag" onclick="openTagPicker(event, 'handoff')">+ 전달할 정보 추가</span>
+              </div>
+              <div class="callout info" style="margin-top:10px"><div class="ic">💬</div><div>운영 시간 외에는 "현재 상담사가 모두 퇴근했어요. 상담 신청서로 접수할까요?" 문구를 자동으로 보여줘요.</div></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /deprecated block preview -->
+
+      <!-- =========================== Screen 4 : System connect =========================== -->
+      <section class="screen" id="s4">
+        <div class="screen-title">
+          <span class="no">3</span>
+          <h2>시스템 연결 관리</h2>
+          <span class="hint">주문·배송 시스템과 이어주는 "창구"를 등록해 두는 곳이에요. 한 번 등록해두면 시나리오 어디서든 꺼내 쓸 수 있어요.</span>
+        </div>
+
+        <div class="callout info" style="margin-bottom:14px">
+          <div class="ic">🧭</div>
+          <div>
+            <b>이 화면은 한 번 설정해두면 거의 손댈 일이 없어요</b>
+            IT팀이나 개발팀이 "창구"(API)를 만들어주면, 기획자인 박초아 님은 어떤 정보를 주고받을지만 고르면 돼요. 어려운 부분은 <span class="tag muted">고급 설정</span> 안에 숨겨뒀으니 안심하세요.
+          </div>
+        </div>
+
+        <div class="sys-grid">
+          <div class="card sys-list">
+            <div class="card-head">
+              <h2>📡 등록된 시스템 창구</h2>
+              <span class="sub">12개</span>
+            </div>
+            <div class="card-body">
+              <div class="sys-item active">
+                <div class="ic">📦</div>
+                <div>
+                  <h4>주문 시스템 · 분리송장 확인</h4>
+                  <p>주문번호로 분리송장 등록 여부 조회</p>
+                </div>
+                <span class="status good">정상</span>
+              </div>
+              <div class="sys-item">
+                <div class="ic">🚚</div>
+                <div>
+                  <h4>배송 시스템 · 실시간 추적</h4>
+                  <p>택배사·송장번호 기반 현재 위치</p>
+                </div>
+                <span class="status good">정상</span>
+              </div>
+              <div class="sys-item">
+                <div class="ic">💳</div>
+                <div>
+                  <h4>결제 시스템 · 환불 가능 조회</h4>
+                  <p>결제 수단별 환불 기한 확인</p>
+                </div>
+                <span class="status good">정상</span>
+              </div>
+              <div class="sys-item">
+                <div class="ic">🧾</div>
+                <div>
+                  <h4>재고 시스템 · 상품 재입고</h4>
+                  <p>SKU 기반 재입고 예정일</p>
+                </div>
+                <span class="status bad">오류</span>
+              </div>
+              <div class="sys-item">
+                <div class="ic">👤</div>
+                <div>
+                  <h4>회원 시스템 · 등급 조회</h4>
+                  <p>VIP/일반 등급별 안내 분기</p>
+                </div>
+                <span class="status new">새로 등록</span>
+              </div>
+              <button class="btn primary" style="width:100%;justify-content:center;margin-top:10px">+ 새 창구 요청하기 (IT팀에 알림)</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>📦 주문 시스템 · 분리송장 확인</h2>
+              <span class="sub">· 마지막 사용 5분 전 · 성공률 98%</span>
+              <div style="margin-left:auto;display:flex;gap:6px">
+                <button class="btn sm">🧪 테스트 실행</button>
+                <button class="btn sm">📝 고급 설정 보기</button>
+              </div>
+            </div>
+            <div class="card-body input-stack">
+              <div class="field">
+                <label>설명 (이 창구가 무슨 일을 하나요?)</label>
+                <textarea>고객이 알려준 주문번호로 주문 시스템에 물어봐서, 해당 주문이 분리송장으로 나눠 배송되는지 확인해요. 결과로 "분리송장 상태"를 알려줘요.</textarea>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="field">
+                  <label>🏷 카테고리</label>
+                  <select><option>배송 관련</option><option>주문 관련</option></select>
+                </div>
+                <div class="field">
+                  <label>⏱ 응답 기다리는 시간</label>
+                  <select><option>일반 (3초)</option><option>빠름 (1초)</option><option>넉넉히 (10초)</option></select>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <h4 style="margin:0 0 8px;font-size:14px">📤 시스템에 보낼 정보</h4>
+              <div class="map-row">
+                <select><option>📌 주문번호 (필수)</option></select>
+                <span class="arrow-ic">→</span>
+                <input value="이 이름으로 보내요: orderNo" readonly style="background:#F7F9FD;color:var(--muted)" />
+              </div>
+              <div class="map-row">
+                <select><option>📌 회원 ID (선택)</option></select>
+                <span class="arrow-ic">→</span>
+                <input value="이 이름으로 보내요: memberId" readonly style="background:#F7F9FD;color:var(--muted)" />
+              </div>
+              <button class="btn sm soft" style="align-self:flex-start">+ 보낼 정보 추가</button>
+
+              <div class="divider"></div>
+
+              <h4 style="margin:0 0 8px;font-size:14px">📥 시스템이 알려줄 정보</h4>
+              <p style="margin:-4px 0 10px;color:var(--muted);font-size:12px">이 정보들을 시나리오 어디에서든 <span class="token">📌 태그</span>로 꺼내 쓸 수 있어요.</p>
+              <div class="map-row">
+                <input value="시스템이 주는 이름: splitInvoiceStatus" readonly style="background:#F7F9FD;color:var(--muted)" />
+                <span class="arrow-ic">→</span>
+                <select><option>📬 분리송장 상태 (등록됨/등록 안 됨/지연)</option></select>
+              </div>
+              <div class="map-row">
+                <input value="시스템이 주는 이름: expectedDate" readonly style="background:#F7F9FD;color:var(--muted)" />
+                <span class="arrow-ic">→</span>
+                <select><option>📅 도착 예정일</option></select>
+              </div>
+              <div class="map-row">
+                <input value="시스템이 주는 이름: subInvoices[]" readonly style="background:#F7F9FD;color:var(--muted)" />
+                <span class="arrow-ic">→</span>
+                <select><option>📦 분리 송장 목록</option></select>
+              </div>
+              <button class="btn sm soft" style="align-self:flex-start">+ 받을 정보 추가</button>
+
+              <div class="callout tip">
+                <div class="ic">✏</div>
+                <div><b>용어를 우리 팀에서 쓰는 이름으로 바꿀 수 있어요</b>예를 들어 시스템이 <code>splitInvoiceStatus</code>라고 알려줘도, 여기서 <i>"분리송장 상태"</i>라고 쓰면 다른 기획자도 쉽게 이해할 수 있어요.</div>
+              </div>
+
+              <!-- Developer / API details (collapsible) -->
+              <details class="dev-details" open>
+                <summary>
+                  <span class="sum-ic">🔧</span>
+                  <span class="sum-title">개발자용 상세 설정 · API 연동 정보</span>
+                  <span class="sum-sub">IT·개발팀이 채워 넣는 영역이에요. 기획자는 그냥 참고만 하셔도 돼요.</span>
+                  <span class="sum-caret">▾</span>
+                </summary>
+
+                <div class="dev-inner">
+                  <div class="dev-tabs">
+                    <span class="dev-tab active">📡 엔드포인트</span>
+                    <span class="dev-tab">🔐 인증</span>
+                    <span class="dev-tab">📤 요청</span>
+                    <span class="dev-tab">📥 응답·매핑</span>
+                    <span class="dev-tab">♻ 에러·재시도</span>
+                    <span class="dev-tab">📜 변경 이력</span>
+                  </div>
+
+                  <div class="dev-grid">
+                    <div class="field">
+                      <label>HTTP 메서드</label>
+                      <select><option>GET</option><option selected>POST</option><option>PUT</option><option>DELETE</option></select>
+                    </div>
+                    <div class="field" style="grid-column:span 2">
+                      <label>엔드포인트 URL</label>
+                      <input value="https://api.hanilnetworks.com/v2/orders/{orderNo}/split-invoice" />
+                      <span class="hint">중괄호 <code>{...}</code>는 📌 태그로 자동 치환돼요 (예: <code>{orderNo}</code> → 고객이 입력한 주문번호)</span>
+                    </div>
+                    <div class="field">
+                      <label>환경</label>
+                      <select><option>🟢 운영 (Production)</option><option>🧪 스테이징</option><option>🔧 개발</option></select>
+                    </div>
+                  </div>
+
+                  <h5 class="dev-h">🔐 인증 방식</h5>
+                  <div class="dev-grid">
+                    <div class="field">
+                      <label>인증 타입</label>
+                      <select><option>API Key (Header)</option><option selected>Bearer Token (OAuth2)</option><option>Basic Auth</option><option>mTLS</option></select>
+                    </div>
+                    <div class="field" style="grid-column:span 2">
+                      <label>토큰 발급 URL</label>
+                      <input value="https://auth.hanilnetworks.com/oauth/token" />
+                    </div>
+                    <div class="field">
+                      <label>Client ID</label>
+                      <input value="chatbot-prod-0421" />
+                    </div>
+                    <div class="field">
+                      <label>Client Secret</label>
+                      <input value="••••••••••••••••" type="password" />
+                    </div>
+                    <div class="field">
+                      <label>Scope</label>
+                      <input value="orders.read delivery.read" />
+                    </div>
+                  </div>
+
+                  <h5 class="dev-h">📤 요청 헤더 & 본문</h5>
+                  <table class="dev-table">
+                    <thead><tr><th>Header</th><th>Value</th><th style="width:90px">필수</th><th style="width:40px"></th></tr></thead>
+                    <tbody>
+                      <tr><td><code>Authorization</code></td><td><code>Bearer {{access_token}}</code></td><td>✅</td><td>🗑</td></tr>
+                      <tr><td><code>Content-Type</code></td><td><code>application/json</code></td><td>✅</td><td>🗑</td></tr>
+                      <tr><td><code>X-Channel</code></td><td><code>chatbot</code></td><td>○</td><td>🗑</td></tr>
+                      <tr><td><code>X-Request-Id</code></td><td><code>{{session.traceId}}</code></td><td>○</td><td>🗑</td></tr>
+                    </tbody>
+                  </table>
+                  <button class="btn sm soft" style="margin-top:6px">+ 헤더 추가</button>
+
+                  <div class="field" style="margin-top:12px">
+                    <label>Request Body (JSON 템플릿)</label>
+<pre class="code-block">{
+  "orderNo": "{{session.orderNo}}",
+  "memberId": "{{session.memberId}}",
+  "channel": "chatbot",
+  "requestedAt": "{{now.iso8601}}"
+}</pre>
+                    <span class="hint"><code>{{ ... }}</code> 표기는 시나리오에서 수집한 📌 태그 값이 자동으로 들어가요.</span>
+                  </div>
+
+                  <h5 class="dev-h">📥 응답 샘플 & 필드 매핑</h5>
+                  <div class="dev-two">
+                    <div>
+                      <label class="dev-label">응답 JSON 샘플</label>
+<pre class="code-block">{
+  "result": "SUCCESS",
+  "data": {
+    "orderNo": "2026040012345",
+    "splitInvoiceStatus": "REGISTERED",
+    "expectedDate": "2026-04-23",
+    "subInvoices": [
+      { "carrier": "CJ", "trackingNo": "1234-5678" },
+      { "carrier": "한진", "trackingNo": "9876-5432" }
+    ],
+    "sellerReplied": true
+  },
+  "message": "OK"
+}</pre>
+                      <div style="display:flex;gap:6px;margin-top:6px">
+                        <button class="btn sm">🧪 실제 호출로 샘플 받기</button>
+                        <button class="btn sm">📋 스키마 자동 추출</button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="dev-label">필드 매핑 (JSON Path → 사용할 이름)</label>
+                      <table class="dev-table">
+                        <thead><tr><th>JSON Path</th><th>타입</th><th>표시 이름 (📌 태그)</th></tr></thead>
+                        <tbody>
+                          <tr><td><code>$.data.splitInvoiceStatus</code></td><td>enum</td><td>📬 분리송장 상태</td></tr>
+                          <tr><td><code>$.data.expectedDate</code></td><td>date</td><td>📅 도착 예정일</td></tr>
+                          <tr><td><code>$.data.subInvoices[*]</code></td><td>array</td><td>📦 분리 송장 목록</td></tr>
+                          <tr><td><code>$.data.sellerReplied</code></td><td>boolean</td><td>📝 판매자 회신 여부</td></tr>
+                          <tr><td><code>$.result</code></td><td>string</td><td>⚙ 응답 상태 (내부용)</td></tr>
+                        </tbody>
+                      </table>
+                      <div class="callout tip" style="margin-top:8px">
+                        <div class="ic">🔗</div>
+                        <div>여기서 만든 <b>📌 태그</b>는 위저드 조건 카드와 안내 메시지에서 <b>드래그해서 꺼내 쓸 수 있어요.</b> 예: <code>$.data.splitInvoiceStatus</code> → 📬 분리송장 상태 → 위저드에서 "가 [등록됨]이면" 조건으로 사용.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <h5 class="dev-h">🗂 enum 값 한글 라벨링</h5>
+                  <table class="dev-table">
+                    <thead><tr><th>원본 값</th><th>한글 표시</th><th>색상</th><th>기본 분기 제안</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>REGISTERED</code></td><td>등록됨</td><td><span class="tag ok">초록</span></td><td>S4. 분리배송 안내</td></tr>
+                      <tr><td><code>NOT_REGISTERED</code></td><td>등록 안 됨</td><td><span class="tag warn">주황</span></td><td>A2. 판매자 확인 요청</td></tr>
+                      <tr><td><code>DELAYED</code></td><td>처리 지연</td><td><span class="tag danger">빨강</span></td><td>S0. 상담사 연결</td></tr>
+                      <tr><td><code>UNKNOWN</code></td><td>알 수 없음</td><td><span class="tag muted">회색</span></td><td>S0. 상담사 연결</td></tr>
+                    </tbody>
+                  </table>
+
+                  <h5 class="dev-h">♻ 타임아웃 · 재시도 · 에러 처리</h5>
+                  <div class="dev-grid">
+                    <div class="field">
+                      <label>Timeout</label>
+                      <input value="3000" /> <span class="hint">밀리초 단위 (ms)</span>
+                    </div>
+                    <div class="field">
+                      <label>재시도 횟수</label>
+                      <input value="2" />
+                    </div>
+                    <div class="field">
+                      <label>재시도 간격(지수 백오프)</label>
+                      <select><option>500ms → 1s → 2s</option><option>1s 고정</option><option>재시도 안 함</option></select>
+                    </div>
+                    <div class="field" style="grid-column:span 3">
+                      <label>실패 시 분기 처리</label>
+                      <div class="sentence" style="margin:0;padding:12px">
+                        <span>응답 코드가</span>
+                        <span class="blank filled">5xx 또는 Timeout</span>
+                        <span>이면</span>
+                        <span class="blank filled">S0. 상담사 연결</span>
+                        <span>로 이동, 고객에게는</span>
+                        <span class="blank filled">"지금은 자동 확인이 어려워요"</span>
+                        <span>메시지를 보여주기</span>
+                      </div>
+                    </div>
+                    <div class="field" style="grid-column:span 3">
+                      <label>HTTP 상태코드별 처리</label>
+                      <table class="dev-table">
+                        <thead><tr><th>Status</th><th>의미</th><th>처리</th></tr></thead>
+                        <tbody>
+                          <tr><td>200</td><td>정상</td><td>응답 매핑 후 위저드 조건 평가</td></tr>
+                          <tr><td>400</td><td>잘못된 요청</td><td>로그 기록 → S0 상담사 연결</td></tr>
+                          <tr><td>401 / 403</td><td>인증 실패</td><td>토큰 재발급 후 1회 재시도 → 실패 시 관리자 알림</td></tr>
+                          <tr><td>404</td><td>주문 없음</td><td>"주문번호를 다시 확인해주세요" 메시지 후 재질문</td></tr>
+                          <tr><td>5xx</td><td>서버 오류</td><td>지수 백오프 재시도 → 그래도 실패 시 S0</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <h5 class="dev-h">🛡 로깅 & 개인정보</h5>
+                  <div class="dev-grid">
+                    <div class="field">
+                      <label>로그 저장 기간</label>
+                      <select><option>30일</option><option selected>90일</option><option>180일</option></select>
+                    </div>
+                    <div class="field">
+                      <label>마스킹 필드</label>
+                      <input value="memberId, phone" />
+                      <span class="hint">로그에 남길 때 자동 마스킹할 필드</span>
+                    </div>
+                    <div class="field">
+                      <label>개인정보 포함 여부</label>
+                      <select><option>포함 (암호화 저장)</option><option>미포함</option></select>
+                    </div>
+                  </div>
+
+                  <h5 class="dev-h">📜 최근 호출 로그 (최근 24시간)</h5>
+                  <table class="dev-table">
+                    <thead><tr><th style="width:120px">시각</th><th style="width:60px">Status</th><th style="width:70px">지연</th><th>요청 → 응답 요약</th></tr></thead>
+                    <tbody>
+                      <tr><td>15:12:08</td><td><span class="tag ok">200</span></td><td>184ms</td><td><code>orderNo=2026040012345</code> → <code>REGISTERED</code></td></tr>
+                      <tr><td>15:10:22</td><td><span class="tag ok">200</span></td><td>221ms</td><td><code>orderNo=2026040012001</code> → <code>NOT_REGISTERED</code></td></tr>
+                      <tr><td>14:58:47</td><td><span class="tag warn">504</span></td><td>3000ms</td><td>Gateway Timeout → 재시도 1회 → 최종 성공</td></tr>
+                      <tr><td>14:41:03</td><td><span class="tag danger">404</span></td><td>92ms</td><td>주문번호 없음 → 고객에게 재질문</td></tr>
+                    </tbody>
+                  </table>
+
+                  <div class="callout warn" style="margin-top:10px">
+                    <div class="ic">🔒</div>
+                    <div><b>이 섹션은 IT팀/개발자 권한에서만 편집할 수 있어요.</b>기획자 계정은 읽기 전용으로 표시되며, Client Secret·토큰 같은 민감 값은 <code>••••</code>로 마스킹됩니다.</div>
+                  </div>
+                </div>
+              </details>
+
+              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+                <button class="btn">미리 테스트</button>
+                <button class="btn primary">💾 저장하기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================== Screen 5 : Preview =========================== -->
+      <section class="screen" id="s5">
+        <div class="screen-title">
+          <span class="no">4</span>
+          <h2>테스트하고 배포하기</h2>
+          <span class="hint">가짜 주문번호로 고객처럼 대화해볼 수 있어요. 이상 없으면 배포하기 버튼을 눌러주세요.</span>
+        </div>
+
+        <div class="callout info" style="margin-bottom:14px">
+          <div class="ic">🧪</div>
+          <div><b>테스트 모드에서는 실제 시스템 호출 없이, 연습용 데이터로 흐름을 확인할 수 있어요.</b> 배포 전에는 반드시 한 번씩 돌려보세요!</div>
+        </div>
+
+        <div class="preview-grid">
+          <div>
+            <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+              <button class="btn sm soft">📱 웹챗</button>
+              <button class="btn sm">💛 카카오톡</button>
+              <button class="btn sm">📞 상담톡</button>
+              <button class="btn sm">🧪 가짜 데이터 ▾</button>
+            </div>
+            <div class="phone">
+              <div class="phone-top"><span>9:41</span><span>📶 🔋</span></div>
+              <div class="phone-screen">
+                <div class="phone-title">한일네트웍스 고객센터 · 배송누락 안내</div>
+                <div class="bubble bot">안녕하세요! 무엇을 도와드릴까요? 😊</div>
+                <div class="bubble bot">배송에 어떤 문제가 있으신가요?</div>
+                <div class="choices">
+                  <div class="choice-btn">📦 배송 조회</div>
+                  <div class="choice-btn">🕐 배송 지연</div>
+                  <div class="choice-btn" style="background:var(--brand-soft);border-color:#B9C7FF">📭 배송누락</div>
+                  <div class="choice-btn">🔄 오배송</div>
+                </div>
+                <div class="bubble user">배송누락</div>
+                <div class="bubble bot">주문번호를 알려주시겠어요?</div>
+                <div class="bubble user">2026040012345</div>
+                <div class="bubble sys">🔍 주문 시스템에 분리송장 여부 확인 중...</div>
+                <div class="bubble bot">확인해보니 나머지 상품은 분리배송으로 <b>4월 23일 도착 예정</b>이에요. 이대로 기다려주시면 됩니다 😊</div>
+                <div class="bubble bot">추가로 도와드릴 일이 있으실까요?</div>
+                <div class="choices">
+                  <div class="choice-btn">✅ 해결됐어요</div>
+                  <div class="choice-btn">🙋 상담사와 얘기할래요</div>
+                </div>
+                <div class="input-row">
+                  <input placeholder="고객처럼 메시지를 입력해보세요..." />
+                  <button>전송</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="trace">
+            <div class="trace-head">
+              <h3>🕒 대화 흐름 기록</h3>
+              <span class="sub">· 어디를 거쳤는지 순서대로 보여드려요</span>
+              <div class="grow"></div>
+              <button class="btn sm">📋 복사</button>
+              <button class="btn sm">↻ 다시 실행</button>
+            </div>
+            <div class="trace-body">
+              <div class="tr-item"><span class="dot"></span><time>09:41:02</time><span class="msg">시나리오 <b>배송누락 안내</b> 시작</span></div>
+              <div class="tr-item"><span class="dot"></span><time>09:41:03</time><span class="msg"><b>질문하기</b> — "배송에 어떤 문제가 있으신가요?" 를 고객에게 보냄</span></div>
+              <div class="tr-item ok"><span class="dot"></span><time>09:41:18</time><span class="msg">고객이 <b>"배송누락"</b> 선택지를 선택</span></div>
+              <div class="tr-item"><span class="dot"></span><time>09:41:19</time><span class="msg"><b>질문하기</b> — 주문번호를 물어봄</span></div>
+              <div class="tr-item ok"><span class="dot"></span><time>09:41:38</time><span class="msg">고객이 주문번호 <b>2026040012345</b> 입력 · 📌 주문번호 저장됨</span></div>
+              <div class="tr-item api"><span class="dot"></span><time>09:41:39</time><span class="msg"><b>자동 확인</b> — 📦 주문 시스템에 분리송장 확인 요청</span></div>
+              <div class="tr-item api"><span class="dot"></span><time>09:41:40</time><span class="msg">📥 결과 받음 · 📬 분리송장 상태 = <b>등록됨</b> · 📅 도착 예정일 = <b>4월 23일</b></span></div>
+              <div class="tr-item ok"><span class="dot"></span><time>09:41:40</time><span class="msg">조건 <b>1번</b> 일치 → <b>S4. 분리배송 안내</b>로 이동</span></div>
+              <div class="tr-item"><span class="dot"></span><time>09:41:41</time><span class="msg"><b>안내 메시지</b> — 도착 예정일 안내 발송</span></div>
+              <div class="tr-item ok"><span class="dot"></span><time>09:41:42</time><span class="msg">시나리오 정상 종료 · 해결됨 ✅</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:16px"></div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>🚀 배포하기</h2>
+            <span class="sub">· 운영 챗봇에 실제로 반영해요</span>
+          </div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px">
+              <div style="padding:14px;border:1px solid var(--line);border-radius:12px">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:4px">✅ 필수 체크리스트</div>
+                <div style="font-weight:700;font-size:15px;color:var(--ok)">4 / 4 통과</div>
+                <div style="margin-top:8px;font-size:12px;color:var(--text-2);line-height:1.7">
+                  ✓ 모든 블록이 연결됨<br />
+                  ✓ 자동 확인 조건 3개 설정 완료<br />
+                  ✓ 오류 안내 메시지 준비됨<br />
+                  ✓ 미리보기 테스트 완료
+                </div>
+              </div>
+              <div style="padding:14px;border:1px solid var(--line);border-radius:12px">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:4px">🧪 테스트 이력</div>
+                <div style="font-weight:700;font-size:15px">12회 통과 · 0회 실패</div>
+                <div style="margin-top:8px;font-size:12px;color:var(--text-2)">마지막 테스트: 방금 전 · 박초아</div>
+              </div>
+              <div style="padding:14px;border:1px solid var(--line);border-radius:12px">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:4px">📡 배포 대상</div>
+                <select style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px"><option>🟢 실제 고객 환경 (운영)</option><option>🧪 내부 테스트 환경</option></select>
+                <div style="margin-top:8px;font-size:12px;color:var(--text-2)">동시에 카카오톡·웹챗·앱에 반영됩니다</div>
+              </div>
+            </div>
+            <div class="callout warn">
+              <div class="ic">⚠</div>
+              <div><b>운영 환경에 배포하기 전에 한 번 더 확인해주세요.</b>고객이 바로 이 시나리오로 대화하게 돼요. 이전 버전으로 언제든 되돌릴 수 있으니 너무 긴장하지 않으셔도 괜찮아요 🙂</div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+              <button class="btn">📦 초안 복제</button>
+              <button class="btn">🧪 테스트 환경에만 먼저 배포</button>
+              <button class="btn primary">🚀 운영 배포</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer">💬 챗봇 스튜디오 · 비개발자 친화형 v2 · © 한일네트웍스 2026</div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const screens = document.querySelectorAll('.screen');
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.classList.remove('active'));
+    screens.forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.screen).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }));
+
+  /* ===== Drag & Drop : palette → canvas ===== */
+  const canvas = document.getElementById('flowCanvas');
+  const flow = document.getElementById('flow');
+  const dropZone = document.getElementById('dropZone');
+
+  document.querySelectorAll('.palette .block[draggable="true"]').forEach(block => {
+    block.addEventListener('dragstart', e => {
+      block.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', JSON.stringify({
+        type: block.dataset.type,
+        icon: block.dataset.icon,
+        title: block.dataset.title,
+        visible: block.dataset.visible
+      }));
+      e.dataTransfer.effectAllowed = 'copy';
+    });
+    block.addEventListener('dragend', () => {
+      block.classList.remove('dragging');
+      canvas && canvas.classList.remove('drag-over');
+      dropZone && dropZone.classList.remove('hot');
+    });
+  });
+
+  if (canvas) {
+    canvas.addEventListener('dragover', e => { e.preventDefault(); canvas.classList.add('drag-over'); e.dataTransfer.dropEffect='copy'; });
+    canvas.addEventListener('dragleave', e => { if(e.target===canvas) canvas.classList.remove('drag-over'); });
+  }
+  if (dropZone) {
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('hot'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('hot'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      try {
+        const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+        addNewNode(data);
+      } catch(err){}
+      dropZone.classList.remove('hot');
+      canvas.classList.remove('drag-over');
+    });
+  }
+
+  function addNewNode(d){
+    const defaults = {
+      q: {body:'"여기에 고객에게 물어볼 질문을 적어주세요"', meta:'답변을 📌 태그로 기억해둬요'},
+      c: {body:'선택지 3개 (더블클릭해서 수정)', meta:'고객이 버튼으로 고를 수 있어요'},
+      a: {body:'시스템에 무엇을 확인할지 정해주세요', meta:'아직 API가 연결되지 않았어요 · 클릭해서 설정하기'},
+      m: {body:'"고객에게 보여줄 안내 메시지를 적어주세요"', meta:'이 블록에서 대화가 끝날 수 있어요'},
+      h: {body:'상담사에게 넘기기', meta:'운영 시간·부서를 설정해주세요'},
+      l: {body:'연결할 시나리오를 선택해주세요', meta:'다른 시나리오의 시작점으로 이어져요'}
+    };
+    const def = defaults[d.type] || {body:'새 블록', meta:''};
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+    arrow.innerHTML = '<span class="label" title="클릭해서 이름 바꾸기">연결 →</span>';
+    flow.insertBefore(arrow, dropZone);
+
+    const node = document.createElement('div');
+    node.className = 'node ' + d.type + ' just-added ' + (d.visible==='seen'?'visible':'internal');
+    node.innerHTML = `
+      <span class="vis-tag ${d.visible==='seen'?'seen':'hidden-tag'}">${d.visible==='seen'?'👁 고객 화면':'🔒 내부 처리'}</span>
+      <div class="node-actions">
+        <button class="na" data-tip="복제" onclick="duplicateNode(event)">📋</button>
+        <button class="na danger" data-tip="삭제" onclick="askDeleteNode(event)">🗑</button>
+      </div>
+      <div class="node-type"><span class="chip-ic">${d.icon}</span>${d.title}</div>
+      <div class="txt">${def.body}</div>
+      <div class="meta">${def.meta}</div>
+      <div class="add-branch">
+        <button class="branch-btn true" onclick="alert('True 화살표 추가')">✅ 예(True) 분기</button>
+        <button class="branch-btn false" onclick="alert('False 화살표 추가')">❌ 아니오(False) 분기</button>
+        <button class="branch-btn custom" onclick="alert('사용자 정의 분기 입력')">🔀 직접 입력</button>
+      </div>
+      <div class="handle-bottom">＋</div>
+    `;
+    flow.insertBefore(node, dropZone);
+    const cnt = document.getElementById('nodeCount');
+    if (cnt) {
+      const total = flow.querySelectorAll('.node').length;
+      cnt.textContent = ` · 블록 ${total}개 (방금 추가됨!)`;
+    }
+    setTimeout(()=>node.classList.remove('just-added'), 800);
+  }
+
+  /* ===== Arrow label quick-edit ===== */
+  document.addEventListener('click', e => {
+    if (e.target.closest('.arrow .label')) {
+      const el = e.target.closest('.arrow .label');
+      const current = el.firstChild?.textContent?.trim() || el.textContent.trim();
+      const preset = prompt('이 화살표의 이름을 정해주세요\n(예: 예 / 아니오 / True / False / VIP 회원 / 기타)', current);
+      if (preset){
+        el.classList.remove('true','false');
+        if (/^예$|^yes$|^true$|^✅/i.test(preset.trim())) el.classList.add('true');
+        else if (/^아니오|^no$|^false$|^❌/i.test(preset.trim())) el.classList.add('false');
+        el.innerHTML = preset + ' <span class="ic">✎</span>';
+      }
+    }
+  });
+
+  /* ===== Branch-type popover ===== */
+  function togglePop(e){
+    e.stopPropagation();
+    const p = e.currentTarget.parentElement.querySelector('.popover');
+    const vis = p.style.display !== 'none';
+    document.querySelectorAll('.popover').forEach(x=>x.style.display='none');
+    p.style.display = vis ? 'none' : 'block';
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.pop')) {
+      document.querySelectorAll('.popover').forEach(x=>x.style.display='none');
+    }
+  });
+
+  /* ===== Inline rule-list quick editing ===== */
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('r-val')) {
+      const newVal = prompt('이 분기의 조건 값을 입력하세요\n(예: 등록됨, 등록 안 됨, 5만원 이상, 그 외)', e.target.textContent.trim());
+      if (newVal) e.target.textContent = newVal;
+    }
+    if (e.target.classList.contains('r-target')) {
+      alert('목적지 블록을 고르는 드롭다운이 여기에 뜹니다.\n(왼쪽 캔버스 블록과 자동 연결)');
+    }
+    if (e.target.classList.contains('rule-add')) {
+      const row = document.createElement('div');
+      row.className = 'rule-row';
+      row.innerHTML = '<span class="r-op">만약</span><span class="r-val ok">새 조건 값</span><span class="r-arr">→</span><span class="r-target">목적지 고르기...</span><span class="r-act">✎</span>';
+      e.target.parentElement.insertBefore(row, e.target);
+    }
+  });
+
+  /* ===== Node selection (click anywhere on a node) ===== */
+  document.addEventListener('click', e => {
+    const node = e.target.closest('.node');
+    // ignore clicks on action buttons / branch buttons — handled separately
+    if (node && !e.target.closest('.na') && !e.target.closest('.branch-btn') && !e.target.closest('.popover') && !e.target.closest('.handle-bottom')) {
+      document.querySelectorAll('.node.selected').forEach(n => n.classList.remove('selected'));
+      node.classList.add('selected');
+    }
+  });
+
+  /* ===== Block delete flow ===== */
+  let pendingDelete = null;
+
+  function askDeleteNode(e){
+    e.stopPropagation();
+    const node = e.currentTarget.closest('.node');
+    if (!node) return;
+    pendingDelete = node;
+    // highlight the node being targeted
+    document.querySelectorAll('.node.selected').forEach(n => n.classList.remove('selected'));
+    node.classList.add('selected');
+    openDeleteConfirm(node);
+  }
+
+  function askDeleteSelected(){
+    const node = document.querySelector('.node.selected');
+    if (!node){
+      alert('먼저 삭제할 블록을 클릭해서 선택해주세요.');
+      return;
+    }
+    pendingDelete = node;
+    openDeleteConfirm(node);
+  }
+
+  function duplicateNode(e){
+    e.stopPropagation();
+    const node = e.currentTarget.closest('.node');
+    if (!node) return;
+    const clone = node.cloneNode(true);
+    clone.classList.remove('selected');
+    clone.classList.add('just-added');
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+    arrow.innerHTML = '<span class="label" title="클릭해서 이름 바꾸기">복제됨 →</span>';
+    node.parentElement.insertBefore(arrow, node.nextSibling);
+    node.parentElement.insertBefore(clone, arrow.nextSibling);
+    setTimeout(()=>clone.classList.remove('just-added'), 800);
+    updateNodeCount();
+  }
+
+  function openDeleteConfirm(node){
+    const overlay = document.getElementById('deleteConfirm');
+    const nameEl = document.getElementById('delNodeName');
+    if (nameEl){
+      const typeTxt = node.querySelector('.node-type')?.textContent.trim() || '이 블록';
+      nameEl.textContent = typeTxt;
+    }
+    overlay.classList.add('open');
+  }
+
+  function closeDeleteConfirm(){
+    document.getElementById('deleteConfirm').classList.remove('open');
+    pendingDelete = null;
+  }
+
+  function confirmDelete(){
+    if (!pendingDelete) { closeDeleteConfirm(); return; }
+    const node = pendingDelete;
+    // also remove adjacent arrow(s) so the flow stays clean
+    const prev = node.previousElementSibling;
+    const next = node.nextElementSibling;
+    if (next && next.classList.contains('arrow')) next.remove();
+    else if (prev && prev.classList.contains('arrow')) prev.remove();
+    // if this node had a branches group right after, remove it too
+    const after = node.nextElementSibling;
+    if (after && after.classList.contains('branches')) after.remove();
+    node.remove();
+    closeDeleteConfirm();
+    updateNodeCount(' · 블록 삭제됨');
+  }
+
+  function updateNodeCount(suffix){
+    const cnt = document.getElementById('nodeCount');
+    if (!cnt) return;
+    const total = document.querySelectorAll('#flow .node').length;
+    cnt.textContent = ` · 블록 ${total}개${suffix || ''}`;
+  }
+
+  /* Keyboard: Delete / Backspace to remove selected node */
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+    // don't hijack when user is typing in an input / textarea / contenteditable
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
+    const node = document.querySelector('#flow .node.selected');
+    if (!node) return;
+    e.preventDefault();
+    pendingDelete = node;
+    openDeleteConfirm(node);
+  });
+
+</script>
+
+<script>
+  /* ===== Tag picker ===== */
+  const TAG_LIBRARY = {
+    conversation: {
+      title: '📥 대화에서 모은 정보',
+      desc: '고객이 "질문하기" 블록에서 직접 알려준 값이에요. 블록을 만들면 <b>자동으로</b> 태그가 생겨요.',
+      items: [
+        {name:'주문번호', src:'질문하기 블록 · 1번', type:'숫자 10자리', required:true},
+        {name:'회원 ID', src:'로그인 세션에서 자동', type:'문자열'},
+        {name:'문의 유형', src:'선택지 블록 · 2번', type:'목록 (4개 중 1개)'},
+        {name:'고객 메모', src:'질문하기 블록 · 5번', type:'자유 텍스트'},
+      ]
+    },
+    system: {
+      title: '🔌 시스템 연결에서 받아온 정보',
+      desc: '"자동 확인" 블록이 API에서 돌려받은 값들이에요. 응답 필드가 <b>자동으로</b> 📌 태그가 돼요.',
+      items: [
+        {name:'분리송장 상태', src:'자동 확인 · 분리송장 여부', type:'등록됨 / 등록 안 됨 / 지연'},
+        {name:'도착 예정일', src:'자동 확인 · 분리송장 여부', type:'날짜'},
+        {name:'택배사', src:'자동 확인 · 분리송장 여부', type:'문자열'},
+        {name:'송장번호', src:'자동 확인 · 분리송장 여부', type:'숫자/문자'},
+        {name:'판매자 회신 여부', src:'자동 확인 · 분리송장 여부', type:'true / false'},
+      ]
+    },
+    profile: {
+      title: '🏷 기본 정보 (고객 프로필)',
+      desc: 'IT팀이 Screen 3에서 등록해둔 전역 태그예요. <b>어디서든</b> 쓸 수 있어요.',
+      items: [
+        {name:'고객이름', src:'회원 DB', type:'문자열'},
+        {name:'연락처', src:'회원 DB', type:'전화번호'},
+        {name:'이메일', src:'회원 DB', type:'이메일'},
+        {name:'등급', src:'회원 DB', type:'VIP / 일반 / 휴면'},
+      ]
+    }
+  };
+
+  function openTagPicker(e, mode){
+    const overlay = document.getElementById('tagPicker');
+    window._tagPickerCtx = { mode, targetTokens: e.currentTarget.parentElement };
+    renderTagPicker();
+    overlay.classList.add('open');
+    setTimeout(()=>{ document.querySelector('.tp-search')?.focus(); }, 50);
+  }
+  function closeTagPicker(){
+    document.getElementById('tagPicker').classList.remove('open');
+  }
+  function renderTagPicker(filter){
+    const body = document.getElementById('tpBody');
+    if (!body) return;
+    const q = (filter || '').trim().toLowerCase();
+    let html = '';
+    Object.entries(TAG_LIBRARY).forEach(([key, g]) => {
+      const filtered = g.items.filter(i => !q || i.name.toLowerCase().includes(q));
+      if (!filtered.length) return;
+      html += `<div class="tp-group"><h4>${g.title} <span class="tp-count">${filtered.length}</span></h4><p class="tp-desc">${g.desc}</p><div class="tp-items">`;
+      filtered.forEach(i => {
+        html += `<div class="tp-item" onclick="pickTag('${i.name}', this)">
+          <span class="tp-tag">📌 ${i.name}${i.required?' <span style="color:#EF4444;font-size:9px;margin-left:2px">필수</span>':''}</span>
+          <span class="tp-origin"><span class="src">${i.src}</span> · ${i.type}</span>
+          <button class="tp-add">+</button>
+        </div>`;
+      });
+      html += '</div></div>';
+    });
+    html += `<div class="tp-group"><h4>✨ 새 태그 직접 만들기</h4><p class="tp-desc">위에 없는 정보라면 여기서 만들 수 있어요. 단, 대부분은 <b>블록에서 자동으로 만들어지니</b> 꼭 필요할 때만 쓰세요.</p>
+      <div class="tp-new">
+        <input placeholder="태그 이름 (예: 배송사)" id="tpNewName" />
+        <select id="tpNewType">
+          <option>문자열</option><option>숫자</option><option>날짜</option><option>true/false</option><option>목록</option>
+        </select>
+        <button class="btn sm" onclick="createCustomTag()">+ 만들기</button>
+      </div></div>`;
+    body.innerHTML = html;
+  }
+  function pickTag(name, el){
+    if (el.classList.contains('added')) return;
+    el.classList.add('added');
+    el.querySelector('.tp-add').textContent = '✓';
+    // insert token before the "+ ..." token inside the originating tokens container
+    const ctx = window._tagPickerCtx;
+    if (ctx && ctx.targetTokens){
+      const addBtn = ctx.targetTokens.querySelector('.add-tag');
+      const token = document.createElement('span');
+      token.className = 'token';
+      token.innerHTML = `📌 ${name}`;
+      ctx.targetTokens.insertBefore(token, addBtn);
+    }
+  }
+  function createCustomTag(){
+    const name = document.getElementById('tpNewName').value.trim();
+    if (!name) { alert('태그 이름을 입력해주세요'); return; }
+    const fakeEl = document.createElement('div');
+    fakeEl.className = 'tp-item';
+    pickTag(name, fakeEl);
+    document.getElementById('tpNewName').value = '';
+    alert(`"📌 ${name}" 태그가 추가됐어요.`);
+  }
+  document.addEventListener('click', e => {
+    if (e.target.id === 'tagPicker') closeTagPicker();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeTagPicker();
+  });
+  document.addEventListener('input', e => {
+    if (e.target.classList.contains('tp-search')) renderTagPicker(e.target.value);
+  });
+</script>
+
+<!-- Tag picker modal -->
+<div class="tag-picker-overlay" id="tagPicker">
+  <div class="tag-picker-box" onclick="event.stopPropagation()">
+    <div class="tp-head">
+      <h3>📌 쓸 태그 고르기</h3>
+      <span class="tp-sub">이 시나리오에서 바로 쓸 수 있는 정보들이에요. <b>따로 등록할 필요 없어요</b> — 아래 목록은 블록과 시스템 연결에서 자동으로 모인 거예요.</span>
+      <button class="tp-close" onclick="closeTagPicker()">✕</button>
+    </div>
+    <input class="tp-search" placeholder="🔎 태그 이름으로 찾기 (예: 주문번호)" />
+    <div class="tp-body" id="tpBody"></div>
+    <div class="tp-foot">
+      <span>👆 클릭하면 자동으로 추가돼요</span>
+      <button class="tp-done" onclick="closeTagPicker()">완료</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="confirm-overlay" id="deleteConfirm" onclick="if(event.target===this) closeDeleteConfirm()">
+  <div class="confirm-box">
+    <div class="ic-big">⚠</div>
+    <h3>이 블록을 삭제할까요?</h3>
+    <p><b id="delNodeName">선택한 블록</b></p>
+    <div class="affected">⚠ 연결된 <b>화살표와 하위 분기</b>도 함께 사라져요. 이 동작은 되돌릴 수 없어요.</div>
+    <div class="buttons">
+      <button class="btn" onclick="closeDeleteConfirm()">취소</button>
+      <button class="btn" onclick="confirmDelete()" style="background:var(--danger);color:#fff;border-color:var(--danger)">🗑 네, 삭제할게요</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
